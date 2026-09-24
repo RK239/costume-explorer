@@ -1,0 +1,15 @@
+# Dependencies and builds
+node_modules/
+dist/
+.vercel/
+
+# macOS
+.DS_Store
+._*
+
+# Raw models from Blender stay local; only optimised GLBs in public/models are committed
+models-src/*
+!models-src/README.md
+
+# Local env
+.env*
