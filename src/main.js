@@ -3,22 +3,23 @@ import './styles/base.css';
 import './styles/ui.css';
 import gsap from 'gsap';
 import content from './content.json';
-import { flags } from './state.js';
+import { flags, state } from './state.js';
 import { lockTouch } from './ui/touch-lock.js';
 import { createStage } from './stage/scene.js';
 import { loadCostumes } from './stage/costumes.js';
 import { createDirector } from './stage/director.js';
 import { createTurntables } from './stage/turntable.js';
-import { mountHeadline } from './ui/attract.js';
+import { createAttract } from './ui/attract.js';
 import { createHotspots } from './ui/hotspots.js';
 import { createStory } from './ui/story.js';
+import { createSelector } from './ui/selector.js';
+import { createIdle } from './ui/idle.js';
 
 lockTouch();
 
 const canvas = document.getElementById('stage');
 const overlay = document.getElementById('overlay');
 const stage = createStage(canvas);
-mountHeadline(overlay, content.exhibition);
 
 // Dev tools start before loading, so the iPad can show load progress and errors on screen.
 const devTools = flags.dev ? await import('./dev.js').then((m) => m.startDevTools(overlay)) : null;
@@ -29,6 +30,8 @@ const rigs = await loadCostumes(stage.scene, costumes, { onStatus: devTools?.sta
 const director = createDirector(stage, rigs);
 const turntables = createTurntables({ rigs, canvas, overlay, director });
 
+const attract = createAttract({ overlay, content, rigs, camera: stage.camera, canvas, director, turntables });
+
 // Hotspots open stories; a story marks its hotspot as seen.
 let story = null;
 const hotspots = createHotspots({
@@ -36,12 +39,31 @@ const hotspots = createHotspots({
   onOpen: (rig, hotspot) => story.open(rig, hotspot),
 });
 story = createStory({ overlay, content, director, turntables, hotspots });
+const selector = createSelector({ overlay, content, rigs, director, story });
 devTools?.attach({ stage, rigs, director, turntables });
 
-// Open on the lineup, then travel into the first costume. The selector (step 6) and the
-// attract state (step 7) replace this with visitor choices.
+// After 45 s with no touch: close any story, forget what was found (the next person is a new
+// visitor), reset the language, and go back to the lineup, all in one move.
+const idle = createIdle({
+  seconds: flags.idleSeconds,
+  onIdle: function returnToAttract() {
+    if (state.mode === 'attract') return;
+    if (director.locked) {
+      gsap.delayedCall(1, returnToAttract); // mid-move: try again once it lands
+      return;
+    }
+    const closing = state.story ? story.closeTimeline() : undefined;
+    hotspots.resetSeen();
+    state.lang = 'en';
+    director.toAttract(closing);
+  },
+});
+
 director.startInAttract();
-gsap.delayedCall(0.8, () => director.toCostume(Math.min(Math.max(flags.focus ?? 0, 0), rigs.length - 1)));
+// ?focus=n skips the attract state for testing.
+if (flags.focus !== null) {
+  gsap.delayedCall(0.8, () => director.toCostume(Math.min(Math.max(flags.focus, 0), rigs.length - 1)));
+}
 
 // One loop for everything. GSAP's ticker drives both the tweens and the frames, so a camera
 // tween, the hotspots that follow the costume and the frame that draws them share one clock.
@@ -51,6 +73,10 @@ gsap.ticker.add((time, deltaMs) => {
   director.update();
   stage.camera.updateMatrixWorld();
   hotspots.update();
+  selector.update();
+  attract.update();
   stage.render();
   stats?.end();
 });
+
+if (flags.dev) window.dev.idle = idle;

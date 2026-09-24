@@ -42,9 +42,11 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
   image.addEventListener('error', () => panel.classList.add('is-pending'));
   image.addEventListener('load', () => panel.classList.remove('is-pending'));
 
-  // The director frames the costume beside the panel, so it needs the panel's size.
-  // offsetWidth/Height ignore transforms, so this is right even while the panel is off-screen.
-  director.panelSize = () => ({ width: panel.offsetWidth, height: panel.offsetHeight });
+  // The director frames the costume beside the panel, so it needs the panel's place on screen.
+  // offset* values ignore transforms, so this is right even while the panel is slid off-screen.
+  director.panelRect = () => ({
+    left: panel.offsetLeft, top: panel.offsetTop, width: panel.offsetWidth, height: panel.offsetHeight,
+  });
 
   let chapter = 0;
 

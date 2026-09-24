@@ -84,6 +84,16 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
 - **Open (Phase 2):** when a label fits on neither side (narrow screens), place it above the ring instead of across the costume.
 - **Content:** English copy is a draft from what's visible on the scans and the Royal Armoury's descriptions. Every hotspot is `invented: true` until Rakesh checks it against sources. Images have planned file names; until the renders exist, the panel shows "Image to come".
 
+## Switching, idle and the basic attract state (steps 6–7)
+- **Decision:** in the attract state, a tap anywhere enters the costume nearest the touch on screen.
+  - **Why:** from 1.5 m, on a small lineup, visitors miss the costume itself. The nearest one is what they meant.
+  - **Rejected:** a raycast hit only, where a near-miss does nothing and reads as broken.
+- **Decision:** the selector shows while exploring and in a story, and hides in the attract state, which invites touching the costumes themselves. Tapping the current costume from a story closes the story.
+- **Decision:** switching from inside a story is one timeline: the panel slides out while the camera travels. Never two moves in a row.
+- **Decision:** in portrait, the story sheet sits above the selector's band, so the selector is always reachable. The camera's story region is taken from where the panel actually sits (`offsetLeft/Top`), not from its size alone.
+- **Decision:** idle reset is one timeline: close the story, clear found state, reset the language, back to the lineup with every costume lit. If a move is already running when the timer fires, it retries a second later.
+- **Fix:** `director.play()` now keeps a timeline's own `onComplete`. Setting its own callback had silently replaced the one that hides the other costumes after a switch; a scripted run caught it.
+
 ## Performance
 - **Decision:** keep about 40 fps or better on Rakesh's older test iPad, and 60 fps on a current iPad.
   - **Measured:** 42 fps at step 1 with one stand-in box, pixel ratio 2 and antialiasing on. The costumes, environment light and spot keys will cost more, so the frame rate has to be managed, not just hoped for.

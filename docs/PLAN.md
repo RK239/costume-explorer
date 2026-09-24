@@ -124,24 +124,24 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 - [x] Panel: three chapters (Material → How it was made → The artistry), tapped through, with no scrolling. A missing image shows an "Image to come" placeholder.
 - [x] Closing (× or a tap on the stage) slides the panel out and pulls the camera back; auto-rotate resumes after the delay.
 - [x] Checked in landscape (side panel) and portrait (bottom sheet).
-- [ ] The selector shows "n/total found" (the selector arrives in step 6).
+- [x] The selector shows "n of total found" (done in step 6).
 - [ ] Rakesh: check the English draft copy (all hotspots are `invented: true` until checked against sources).
 
-**Commit** (steps 4–5)
+**Commit** (steps 4–5) ✓
 
 ## 6. Costume switching (~30 min)
-- [ ] Selector: three labelled buttons, always visible, one tap each from any mode. From a story, the same timeline closes the story first.
-- [ ] Switch timeline: the current costume goes dark, the camera trucks along the row, the next costume lights up. `--accent` changes.
-- [ ] Hide unfocused costumes (`visible = false`) once the transition completes.
+- [x] Selector: three labelled buttons with "n of total found", visible while exploring, one tap each from any mode. From a story, the same timeline closes the story.
+- [x] Switch timeline: the current costume goes dark, the camera trucks along the row, the next costume lights up. `--accent` tweens to the new colour.
+- [x] Hide unfocused costumes (`visible = false`) once the transition completes.
 
 ## 7. Idle and a basic attract state (~30 min)
-- [ ] Idle: any `pointerdown` (capture phase) resets a 45 s timer. `?idle=5` shortens it. The timer pauses while the tour plays.
-- [ ] On timeout:
+- [x] Idle: any `pointerdown` (capture phase) resets a 45 s timer. `?idle=5` shortens it. `pause()`/`resume()` are ready for the tour.
+- [x] On timeout, in one timeline:
   - close the story
   - reset seen state and language
-  - run the timeline back to the wide shot
-- [ ] Basic attract: a wide shot of the lineup, a headline, and a tap enters a costume.
-- [ ] Checkpoint: the whole loop works on the iPad.
+  - run back to the wide shot
+- [x] Basic attract: the lineup, a headline, "Touch a costume to begin", and a tap enters the costume nearest the touch. The app now boots here; `?focus=n` skips it for testing.
+- [ ] Checkpoint: the whole loop works on the iPad. (Scripted in the browser: attract → costume → switch → story → switch from the story → idle reset. Rakesh to run it on the iPad.)
 
 **Commit** (steps 6–7)
 

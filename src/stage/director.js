@@ -23,8 +23,9 @@ export function createDirector(stage, rigs) {
   const shot = { x: 0, y: EYE_HEIGHT, z: 10, shiftX: 0, shiftY: 0 };
   let locked = false;
   let reframePending = false;
-  // Story panel size in px, supplied by story.js (the director doesn't read the DOM itself).
-  let panelSize = () => ({ width: 0, height: 0 });
+  // Where the story panel sits on screen, in px, supplied by story.js (the director doesn't
+  // read the DOM itself). Its layout position, ignoring the slide-in transform.
+  let panelRect = () => ({ left: 0, top: 0, width: 0, height: 0 });
 
   const viewport = () => ({ width: canvas.clientWidth, height: canvas.clientHeight });
   // Same test as the CSS (@media (orientation: portrait)), so layout and camera never disagree.
@@ -41,18 +42,20 @@ export function createDirector(stage, rigs) {
     return { left: inline, top, width: width - 2 * inline, height: height - top - bottom };
   }
 
-  // The free region minus the story panel. Landscape: the panel sits at the inline end
-  // (right in English, left in Arabic). Portrait: it's a bottom sheet.
+  // The free region minus the story panel, taken from where the panel actually sits.
+  // Landscape: the panel is at the inline end (right in English, left in Arabic).
+  // Portrait: it's a sheet above the selector.
   function storyRegion() {
     const region = freeRegion();
-    const panel = panelSize();
+    const panel = panelRect();
     if (isPortrait()) {
-      const { height } = viewport();
-      const bottom = height - panel.height - PANEL_GAP;
-      return { ...region, height: Math.max(80, bottom - region.top) };
+      return { ...region, height: Math.max(80, panel.top - PANEL_GAP - region.top) };
     }
-    const width = Math.max(80, region.width - panel.width - PANEL_GAP);
-    return { ...region, left: isRTL() ? region.left + region.width - width : region.left, width };
+    if (isRTL()) {
+      const left = panel.left + panel.width + PANEL_GAP;
+      return { ...region, left, width: Math.max(80, region.left + region.width - left) };
+    }
+    return { ...region, width: Math.max(80, panel.left - PANEL_GAP - region.left) };
   }
 
   // The shot that fits a subject inside a screen region.
@@ -130,8 +133,11 @@ export function createDirector(stage, rigs) {
   function play(timeline, nextMode) {
     state.mode = 'transition';
     locked = true;
+    // Keep any onComplete the timeline already has (e.g. hiding the other costumes).
+    const own = timeline.eventCallback('onComplete');
     return new Promise((resolve) => {
       timeline.eventCallback('onComplete', () => {
+        own?.();
         locked = false;
         state.mode = nextMode;
         if (reframePending) {
@@ -225,7 +231,7 @@ export function createDirector(stage, rigs) {
   return {
     shot,
     get locked() { return locked; },
-    set panelSize(fn) { panelSize = fn; },
+    set panelRect(fn) { panelRect = fn; },
     freeRegion,
     frameCostume,
     frameLineup,
