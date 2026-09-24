@@ -20,6 +20,7 @@ const TAP_TIME_MS = 300;
 export function createTurntables({ rigs, canvas, overlay, director }) {
   // One motion state per costume. All of them turn; only the focused one takes touches.
   const motion = rigs.map(() => ({ velocity: 0, auto: 1 }));
+  const held = new Set(); // costumes the director is turning (a story is open): no drag, no auto-rotate
   const tapListeners = [];
   let drag = null;
   let lastTouch = -Infinity;
@@ -34,8 +35,12 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
       startX: event.clientX, startY: event.clientY, startTime: now,
       lastX: event.clientX, moved: 0,
       samples: [],
+      // Only explore mode turns the costume. Elsewhere a touch can still be a tap
+      // (enter from attract, close a story).
+      turns: state.mode === 'explore' && !held.has(state.focus),
     };
     lastTouch = now;
+    if (!drag.turns) return;
     // Touching a spinning turntable catches it, like putting a hand on a real one.
     const m = motion[state.focus];
     m.velocity = 0;
@@ -49,6 +54,7 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
     drag.lastX = event.clientX;
     drag.moved = Math.max(drag.moved, Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY));
     lastTouch = now;
+    if (!drag.turns) return;
 
     const rig = rigs[state.focus];
     const angle = (dx / director.pixelsPerRadian(rig)) * DRAG_GAIN;
@@ -63,15 +69,17 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
     const now = performance.now();
     const isTap = drag.moved < TAP_MOVE_PX && now - drag.startTime < TAP_TIME_MS;
 
-    let velocity = 0;
-    const samples = drag.samples.filter((s) => now - s.time <= VELOCITY_WINDOW);
-    const last = samples[samples.length - 1];
-    if (samples.length > 1 && now - last.time < HOLD_STILL) {
-      const total = samples.reduce((sum, s) => sum + s.angle, 0);
-      const span = (last.time - samples[0].time) / 1000;
-      if (span > 0) velocity = total / span;
+    if (drag.turns) {
+      let velocity = 0;
+      const samples = drag.samples.filter((s) => now - s.time <= VELOCITY_WINDOW);
+      const last = samples[samples.length - 1];
+      if (samples.length > 1 && now - last.time < HOLD_STILL) {
+        const total = samples.reduce((sum, s) => sum + s.angle, 0);
+        const span = (last.time - samples[0].time) / 1000;
+        if (span > 0) velocity = total / span;
+      }
+      motion[state.focus].velocity = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, velocity));
     }
-    motion[state.focus].velocity = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, velocity));
 
     lastTouch = now;
     drag = null;
@@ -87,7 +95,8 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
     rigs.forEach((rig, i) => {
       const m = motion[i];
       const touched = i === state.focus;
-      if (touched && drag) return; // the finger is in charge
+      if (held.has(i)) return; // the director is turning it
+      if (touched && drag?.turns) return; // the finger is in charge
 
       m.velocity *= Math.exp(-DAMPING * dt);
       if (!touched || sinceTouch > AUTO_DELAY) m.auto = Math.min(1, m.auto + dt / AUTO_RAMP);
@@ -103,8 +112,23 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
     overlay.classList.toggle('spinning', spinning);
   }
 
+  // A story holds its costume still while the director turns the detail to the visitor.
+  function hold(index) {
+    held.add(index);
+    motion[index].velocity = 0;
+  }
+
+  // Letting go counts as a touch: auto-rotate waits the usual delay, then eases back in.
+  function free(index) {
+    held.delete(index);
+    motion[index].auto = 0;
+    lastTouch = performance.now();
+  }
+
   return {
     update,
+    hold,
+    free,
     onTap: (listener) => tapListeners.push(listener),
     get spinning() { return spinning; },
   };

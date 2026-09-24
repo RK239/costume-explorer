@@ -68,6 +68,22 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
 - **Decision:** the 45 s idle timer pauses while the tour plays.
   - **Why:** otherwise a visitor who is watching the tour without touching gets sent back to the attract state.
 
+## Hotspots and story (steps 4–5)
+- **Decision:** four hotspots on each real costume: two front, one side, one back (tour order front → side → back). The back one (the National Costume's cape, the armour's backplate) only appears and only becomes tappable once the costume is turned round. Checked.
+- **Decision:** a hotspot's `normal` is the direction the detail is best seen from, rounded by hand from the measured surface normal.
+  - **Why:** scan surfaces are noisy. The breastplate's raw normal points 45° sideways, so opening its story would turn the armour to an odd angle.
+  - **Rejected:** raw normals straight from the tap tool.
+- **Decision:** positions measured with `dev.probe` (a ray fired at the costume from a chosen side and height) and checked with markers on the model, rather than by hand-tapping.
+- **Decision:** in a story, the active hotspot keeps only its ring (its label would collide with the panel, whose title already names it). Other hotspots hide.
+- **Decision:** closing a story is its own timeline (panel out, camera back to the full costume), not the opening timeline reversed.
+  - **Why:** a literal reverse would also turn the costume back to where it was. Leaving it facing the visitor, then letting auto-rotate ease in after the usual delay, reads calmer.
+- **Decision:** a label that changes side as the costume turns fades back in instead of jumping, with a 12 px dead zone at the centre line so it doesn't flicker. ("Nothing snaps.")
+- **Decision:** a tap on the stage also closes a story, as well as the × button.
+- **Decision:** layout and camera use the same portrait test, `matchMedia('(orientation: portrait)')`.
+  - **Why:** found a bug on a square screen. CSS counts a square as portrait, the JavaScript didn't, so the camera framed for a side panel while a bottom sheet opened.
+- **Open (Phase 2):** when a label fits on neither side (narrow screens), place it above the ring instead of across the costume.
+- **Content:** English copy is a draft from what's visible on the scans and the Royal Armoury's descriptions. Every hotspot is `invented: true` until Rakesh checks it against sources. Images have planned file names; until the renders exist, the panel shows "Image to come".
+
 ## Performance
 - **Decision:** keep about 40 fps or better on Rakesh's older test iPad, and 60 fps on a current iPad.
   - **Measured:** 42 fps at step 1 with one stand-in box, pixel ratio 2 and antialiasing on. The costumes, environment light and spot keys will cost more, so the frame rate has to be managed, not just hoped for.
@@ -86,9 +102,44 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
   - **GPU budget:** about 100 MB of textures per costume, so all three stay around 300 MB on a 2 GB iPad. The script prints each model's estimate.
   - **Rejected:** the CLI's single `--texture-size` for every map. Either the roughness maps waste memory, or the colour and normal maps lose the weave.
   - **Result:** Glafira 3.8 MB → 2.98 MB, ~101 MB GPU (from ~134 MB). The dress 2.26 MB → 2.19 MB.
+- **Decision (2026-09-25):** scans and odd exports are fixed in the pipeline, not in the app, so the app can assume ARCHITECTURE.md's convention (feet or hem at the plinth, front +Z, centred on the axis).
+  - Node transforms are baked into the vertices. Sketchfab wraps models in rotated, scaled root nodes.
+  - `place: { rotateY, height, lift }` per model: turn to face +Z, scale to real height, centre on the axis, lift the lowest point above the plinth.
+  - `clampUVs` per model, for single-atlas scans whose edge UVs stray a hair outside 0–1 (that stopped UV quantisation). Never used on tiling UVs.
+  - Any texture slot not listed in the size table (e.g. `specularTexture`) is still compressed, at 1K. Found when the King's specular map shipped as a 2K PNG.
+  - **Rejected:** fixing orientation with `yawOffset` in content.json. The plinth's front mark and the hotspot maths assume the model's front is +Z in its own space.
 
 ## Models and licences
-- **Rule:** CC-BY or CC0 only. The site serves each GLB publicly, so anyone can download it; the licence has to allow that.
+- **Rule:** CC BY, CC BY-SA or CC0. Never NC (non-commercial) or ND (no derivatives), and never marketplace "Standard" or "Royalty Free" licences. The site serves each GLB publicly, so anyone can download it; the licence has to allow that.
+  - *Updated 2026-09-25 to allow CC BY-SA.* ShareAlike only means our optimised copy of the model must also be shared under CC BY-SA 4.0, and the README will say so. It doesn't reach our code: the site shows the model, it isn't an adaptation of it.
+- **2026-09-25: Candidates from The Royal Armoury (Livrustkammaren), Stockholm.** Real museum objects, photogrammetry-scanned, so the hotspot content can be documented fact.
+  - *The National Costume* (CC BY-SA 4.0, scan by Erik Lernestål). The Swedish national dress designed by King Gustav III, this one worn by him on 24 April 1778: rose silk, floral embroidery, gold braid, a cape. 500k triangles, 1 texture.
+  - *The Parade Armour of King Erik XIV of Sweden* (CC BY 4.0). Made around 1562 in Arboga, decorated in Antwerp by goldsmith Elisaeus Libaerts: blackened steel with gilt repoussé. 1M triangles, 1 texture. The hard-material contrast the set needs.
+  - Both are scans with one texture, so a larger texture (3–4K) fits the GPU budget. Lighting is baked into the colour and there's no normal map, so the spot light will rake less. Back coverage still to check after download.
+  - *The King Costume* (Myylo, CC BY 4.0): licence fine, but it's fan art of a film costume and has plainer textures. The National Costume is the stronger menswear choice.
+- **2026-09-25: The National Costume: on stage as costume 1.** Rakesh downloaded it.
+  - Arrived as a raw scan: arbitrary units, facing −Z, floating off-centre. The pipeline turns it 180°, scales it to an estimated 1.07 m (collar to knee bands) and lifts it 0.40 m, to knee height. *Height and lift are estimates for a ~1.70 m wearer; Rakesh to confirm by eye.*
+  - 500k → 125k triangles; one 4K colour texture. 2.91 MB, ~89 MB GPU. Close-ups show the real embroidery, silver-gilt thread, fabric buttons and the weave of the silk.
+  - **Flaw:** a scan hole in the cape's white lining, on its inner right edge, visible from a front three-quarter angle. Options: fill it in Blender, or keep hotspots and push-ins away from that angle.
+  - **Open:** the garment ends at the knee, so it floats 40 cm above the plinth. Options: leave it floating (an invisible mannequin); add a slim museum mount rod from plinth to waist (recommended: it's how museums show a garment without legs, and it grounds the object); or set it on the plinth (wrong proportions next to the others).
+- **2026-09-25: The Parade Armour of King Erik XIV: on stage as costume 3.** Chosen by Rakesh with the National Costume. Replaces the King in slot 3.
+  - A complete suit, helmet to sabatons, already in metres (1.67 m), feet at the bottom, front facing +X. The pipeline turns it −90°. No lift or mount needed. The back plate is decorated: the back-only hotspot.
+  - **Geometry:** the relief (repoussé lions, scrollwork, rivets) lives in the mesh, not the texture. Simplifying to 150k turned it into faceted "foil"; 300k still lost it; **450k keeps most of it (4.53 MB, over the 3 MB budget).** Cloth survives heavy simplification because its detail is in the textures; embossed metal doesn't.
+  - **Planned fix:** bake a normal map from the 1M original onto a ~150k mesh in Blender. That keeps the relief at a third of the triangles, and it's the standard game-art route. Until then, 450k.
+  - **Texture:** Rakesh downloaded Sketchfab's 1K option, too soft for a full-body scan. Re-download at 4K; the pipeline already allows 4K for this model.
+  - Material: metallic 1, roughness 0.28, no roughness map. Real polished steel, so it reflects the stage's environment light. Revisit in the lighting pass.
+- **2026-09-25: The King Costume: on stage as costume 3 for comparison only.** Recommendation: don't use it. The robe and back are plain black (no back-only detail), the trousers and buttons are untextured, and it's 4.87 MB. Next to the National Costume scan it reads as a game asset. Rakesh to decide.
+  - *Why it looked like vinyl:* an export error, not our renderer. The doublet's `roughnessFactor` was 0; glTF multiplies it with the roughness texture, so the fabric rendered mirror-smooth. Sketchfab's own viewer apparently ignores the factor when a texture is present, so it looked matte there. Fixed in the pipeline (`materials` override, 0 → 1); metalness left as authored.
+- **Pipeline:** `materials` per model corrects exporter mistakes by material name (roughness and metalness factors), and the fix is recorded next to the model.
+- **2026-09-25: Leather Dress (DaaGHrii, CC BY 4.0).** Licence and tech fine (27k triangles, 3 textures), but not recommended on design grounds: a generic modern mini dress with no maker, wearer or history, so every hotspot would be invented; game or pin-up styling that's a tone risk for a public, all-ages kiosk; black on a black stage; and probably a plain back.
+- **2026-09-25: Farnos' costume from a traditional engraving (Aleksei Moskvin, CC BY 4.0).** Licence fine; a folk-comic character from the 18th-century lubok print "Farnos i Pigasia", with legs and shoes so it stands on the plinth. Not recommended as the third costume: its silhouette (doublet, cape, knee breeches, lace collar) repeats the National Costume's, so the set would be two men's 18th-century outfits. Also 32 textures across 11 materials (would need hard per-material downsizing) and the same collection whose quality Rakesh rejected with Glafira.
+- **2026-09-25: Man's #4 costume from a traditional engraving (Aleksei Moskvin, CC BY-NC-ND 4.0).** Not usable: NoDerivatives forbids the simplifying it needs (380k triangles, 20 textures), and NonCommercial is risky for a kiosk. A sibling, *Man's #3 costume from a historical engraving*, is CC BY on the department's account.
+- **2026-09-25: Belotelova (IVSPU, CC BY 4.0).** Removed from the candidates by Rakesh.
+- **2026-09-25: Plague Inquisitor – Armored Beak Mask & Blade (Pigcraft, CC BY 4.0).** Not recommended, on design grounds:
+  - Very likely AI-generated. The uploader has 75 models on unrelated subjects, often several a day, with round triangle counts (~0.5M/1M/2M) and keyword-stuffed descriptions. An AI-generated centrepiece undercuts an exhibition built on authorship, and whether a CC licence even holds on AI output is unsettled.
+  - It's a dark-fantasy game character (hands, boots, faceless mask), not a costume on a form. It would clash with real museum objects.
+  - 1.9M triangles.
+  - If the plague-doctor idea appeals, look for a historical 17th-century plague doctor costume from a museum or a documented reconstruction instead.
 - **2026-09-25: Vintage Asian Dress Belt (Paradoox, TurboSquid, free download, Standard licence).** A strong model, but TurboSquid's Standard licence allows WebGL only through Unity, Unreal and Lumberyard exports. It forbids open formats that a public framework can open, which covers a GLB loaded by three.js.
   - **Decision:** use it for local development only. It's git-ignored, so the deployed site falls back to a stand-in. Find a CC-BY or CC0 replacement.
   - **Rejected:** obfuscating the GLB to count as "proprietary". It breaks the spirit of the licence, and the brief asks for a free-licensed model credited in the README.

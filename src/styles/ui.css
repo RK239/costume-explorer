@@ -1,4 +1,12 @@
-/* Plain Phase 1 styles. Logical properties only, so RTL is a switch later. */
+/* Plain Phase 1 styles. Logical properties throughout, so RTL is a switch later; the two
+   deliberate physical exceptions are marked. No :hover anywhere (touch only). */
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* ── Attract headline ─────────────────────────────────────────────── */
 
 .headline {
   position: absolute;
@@ -14,6 +22,185 @@
   line-height: 1.05;
 }
 
+.headline p {
+  margin: 0.4em 0 0;
+  font-size: var(--text-body);
+  color: var(--ink-muted);
+}
+
+/* ── Hotspots ─────────────────────────────────────────────────────── */
+
+.hotspots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Positioned by hotspots.js with translate3d from the 3D projection, which is in physical
+   screen pixels: the one place that uses physical left/top on purpose. */
+.hotspot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  inline-size: var(--hotspot-hit);
+  block-size: var(--hotspot-hit);
+  margin: calc(var(--hotspot-hit) / -2) 0 0 calc(var(--hotspot-hit) / -2);
+  padding: 0;
+  border: 0;
+  background: none;
+  visibility: hidden;
+  will-change: transform, opacity;
+}
+
+.hotspot__ring {
+  position: absolute;
+  inset: calc((var(--hotspot-hit) - var(--hotspot-ring)) / 2);
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6), inset 0 0 0 1px rgb(0 0 0 / 0.6);
+}
+
+/* Seen state: the ring fills once its story has been opened. */
+.hotspot.is-seen .hotspot__ring {
+  background: var(--ink);
+}
+
+.hotspot__label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 14px;
+  white-space: nowrap;
+  font-size: var(--text-label);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+  background: var(--plate);
+  border-radius: 6px;
+}
+
+/* Label side follows the garment, not the language (DECISIONS.md), so it's physical on purpose.
+   The 10 px gap matches LABEL_GAP in hotspots.js. */
+.hotspot.is-left .hotspot__label { right: calc(100% + 10px); }
+.hotspot.is-right .hotspot__label { left: calc(100% + 10px); }
+
+/* ── Story panel ──────────────────────────────────────────────────── */
+
+.story {
+  position: absolute;
+  inset-block: var(--frame-top) var(--frame-bottom);
+  inset-inline-end: var(--edge);
+  inline-size: var(--panel-inline);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px;
+  background: var(--plate);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  pointer-events: auto;              /* taps on the panel never reach the stage */
+  overflow: hidden;
+}
+
+@media (orientation: portrait) {
+  .story {
+    inset-block: auto var(--edge);
+    inset-inline: var(--edge);
+    inline-size: auto;
+    block-size: var(--panel-block);
+  }
+}
+
+.story__close {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-end: 8px;
+  inline-size: var(--hit);
+  block-size: var(--hit);
+  padding: 0;
+  font-size: 34px;
+  line-height: 1;
+  background: none;
+  border: 0;
+}
+
+.story__costume {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.story__title {
+  margin: 0;
+  padding-inline-end: var(--hit);
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.story__tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.story__tab {
+  flex: 1;
+  min-block-size: var(--hit);
+  padding: 8px 10px;
+  font-size: 17px;
+  line-height: 1.2;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.story__tab[aria-selected="true"] {
+  background: var(--ink);
+  color: var(--stage);
+  border-color: var(--ink);
+}
+
+.story__text {
+  margin: 0;
+  font-size: var(--text-body);
+  line-height: 1.45;
+}
+
+.story__figure {
+  position: relative;
+  flex: 1;
+  min-block-size: 0;
+  margin: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0e0e10;
+}
+
+.story__image {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.story__pending {
+  display: none;
+  position: absolute;
+  inset: 0;
+  place-items: center;
+  font-size: 16px;
+  color: var(--ink-muted);
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+}
+
+.story.is-pending .story__image { visibility: hidden; }
+.story.is-pending .story__pending { display: grid; }
+
+/* ── Dev readout ──────────────────────────────────────────────────── */
+
 .dev-readout {
   position: absolute;
   inset-inline-end: 16px;
@@ -27,10 +214,4 @@
   color: #9fffc4;
   background: rgb(0 0 0 / 0.7);
   border-radius: 6px;
-}
-
-.headline p {
-  margin: 0.4em 0 0;
-  font-size: var(--text-body);
-  color: var(--ink-muted);
 }

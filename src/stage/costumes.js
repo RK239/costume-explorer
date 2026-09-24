@@ -26,15 +26,29 @@ const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 
 // Loads every costume at once and stands each on its own turntable in a row.
 // Resolves when all of them are ready, so switching never has to wait for a download.
-export async function loadCostumes(scene, costumes) {
+// onStatus(id, text) is optional: the dev tools use it to show load progress on the iPad.
+export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}) {
   const models = await Promise.all(
     costumes.map((data, index) => {
-      if (!data.model) return createStandIn(index);
-      // A missing file falls back to a stand-in, so one bad model never blanks the whole stage.
-      return loadModel(data.model).catch((error) => {
-        console.warn(`Could not load ${data.model}; using a stand-in.`, error);
+      if (!data.model) {
+        onStatus(data.id, 'stand-in');
         return createStandIn(index);
-      });
+      }
+      const start = performance.now();
+      const progress = (event) => {
+        if (event.total) onStatus(data.id, `downloading ${Math.round((event.loaded / event.total) * 100)}%`);
+      };
+      // A missing file falls back to a stand-in, so one bad model never blanks the whole stage.
+      return loadModel(data.model, progress)
+        .then((model) => {
+          onStatus(data.id, `ready in ${((performance.now() - start) / 1000).toFixed(1)} s`);
+          return model;
+        })
+        .catch((error) => {
+          console.warn(`Could not load ${data.model}; using a stand-in.`, error);
+          onStatus(data.id, `FAILED, stand-in used (${error?.message ?? error})`);
+          return createStandIn(index);
+        });
     }),
   );
 
@@ -142,8 +156,8 @@ function floorRadius(model, box) {
   return radius;
 }
 
-function loadModel(url) {
-  return loader.loadAsync(url).then((gltf) => gltf.scene);
+function loadModel(url, onProgress) {
+  return loader.loadAsync(url, onProgress).then((gltf) => gltf.scene);
 }
 
 function createShadowTexture() {

@@ -72,11 +72,17 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
 ## Content schema (`src/content.json`)
 ```json
 {
+  "exhibition": { "title": { "en": "", "ar": "" }, "hook": { "en": "", "ar": "" } },
+  "ui": {
+    "chapters": { "material": {}, "made": {}, "artistry": {} },
+    "close": {}, "found": { "en": "{n} of {total} found" }, "imagePending": {}, "touchToBegin": {}
+  },
   "costumes": [{
     "id": "armour",
     "model": "/models/armour.glb",
     "yawOffset": 0,
     "accent": "#B8452E",
+    "shortTitle": { "en": "", "ar": "" },
     "title":   { "en": "", "ar": "" },
     "context": { "en": "", "ar": "" },
     "credit":  { "name": "", "author": "", "url": "", "licence": "" },
@@ -97,7 +103,7 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
   }]
 }
 ```
-Positions and normals are in costume-local space. `image.kind` is `closeup` or `sketch`.
+Positions and normals are in costume-local space. `normal` is the direction the detail is best seen from (rounded from the surface normal; see DECISIONS.md). `image.kind` is `closeup` or `sketch`. Every piece of visible copy, including UI words, lives here with `en` and `ar` slots.
 
 ## File layout
 ```
@@ -132,6 +138,9 @@ scripts/
 ```
 
 ## Dev tools (`?dev=1`)
+- Started before the models load. The readout shows each model's load progress (or failure) and any error, since the iPad has no console to read.
+- `?skip=<id>,<id>` loads stand-ins instead of those models, to find a model a device can't handle.
+- `dev.probe(index, side, y, across)` in the console fires a ray at a costume from a side and returns hotspot position and normal.
 - Tapping the model logs the costume-local position and normal of the hit, ready to paste into content.json.
 - Stats panel from `three/addons/libs/stats.module.js`.
 - A button that saves the current canvas as a still. Capture immediately after a render call.

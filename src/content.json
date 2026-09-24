@@ -3,41 +3,217 @@
     "title": { "en": "Costume Explorer", "ar": "" },
     "hook": { "en": "Each costume hides a detail on its back", "ar": "" }
   },
+  "ui": {
+    "chapters": {
+      "material": { "en": "Material", "ar": "" },
+      "made": { "en": "How it was made", "ar": "" },
+      "artistry": { "en": "The artistry", "ar": "" }
+    },
+    "close": { "en": "Close", "ar": "" },
+    "found": { "en": "{n} of {total} found", "ar": "" },
+    "imagePending": { "en": "Image to come", "ar": "" },
+    "touchToBegin": { "en": "Touch a costume to begin", "ar": "" }
+  },
   "costumes": [
     {
-      "id": "costume-a",
-      "model": "/models/vintage-asian-dress-belt.glb",
+      "id": "national-costume",
+      "model": "/models/national-costume.glb",
       "yawOffset": 0,
-      "accent": "#B8452E",
-      "title": { "en": "Costume A", "ar": "" },
-      "context": { "en": "Placeholder wearer and place", "ar": "" },
+      "accent": "#A8706A",
+      "shortTitle": { "en": "National Costume", "ar": "" },
+      "title": { "en": "The National Costume", "ar": "" },
+      "context": { "en": "Worn by King Gustav III of Sweden, 24 April 1778", "ar": "" },
       "credit": {
-        "name": "Vintage Asian Dress Belt",
-        "author": "Paradoox",
-        "url": "https://www.turbosquid.com/FullPreview/2382634",
-        "licence": "TurboSquid Standard. Development only: the licence forbids serving it in an open format on the web, so it is not deployed."
+        "name": "The National Costume",
+        "author": "The Royal Armoury (Livrustkammaren), Stockholm. Scan by Erik Lernestål",
+        "url": "https://sketchfab.com/3d-models/the-national-costume-3bbd0a12d98d4c66849486c61b7a8694",
+        "licence": "CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Our optimised copy is shared under the same licence; changes are listed in scripts/models.config.json."
       },
-      "hotspots": []
+      "hotspots": [
+        {
+          "id": "embroidery",
+          "side": "front",
+          "tourOrder": 1,
+          "position": [0.07, 1.22, 0.164],
+          "normal": [0.26, 0, 0.97],
+          "frame": 0.5,
+          "label": { "en": "The embroidery", "ar": "" },
+          "material": { "en": "Pink, cream and green silk embroidery, worked with metal thread over a pale rose silk ground.", "ar": "" },
+          "made": { "en": "The design was embroidered onto the cut pieces before the coat was sewn up, so every flower sits exactly where an edge will fall.", "ar": "" },
+          "artistry": { "en": "The flowers run in one unbroken border down both fronts, framing the body like a portrait. The braided bars between the buttons keep time with them.", "ar": "" },
+          "image": { "src": "/images/national-embroidery.webp", "kind": "closeup", "alt": { "en": "Close-up of the floral embroidery beside the buttons", "ar": "" } },
+          "invented": true
+        },
+        {
+          "id": "knee-bands",
+          "side": "front",
+          "tourOrder": 2,
+          "position": [-0.1, 0.52, 0.178],
+          "normal": [0, 0, 1],
+          "frame": 0.55,
+          "label": { "en": "Knee bands", "ar": "" },
+          "material": { "en": "Silk breeches gathered into a band just below the knee and tied with ribbon.", "ar": "" },
+          "made": { "en": "The legs were cut full and pleated into the band, then fastened with ribbon ties rather than buckles.", "ar": "" },
+          "artistry": { "en": "Like the puffed shoulders, the loose, ribboned breeches look back to older Swedish dress instead of to Paris.", "ar": "" },
+          "image": { "src": "/images/national-knee-bands.webp", "kind": "closeup", "alt": { "en": "Close-up of a ribbon tie at the knee", "ar": "" } },
+          "invented": true
+        },
+        {
+          "id": "shoulder",
+          "side": "side",
+          "tourOrder": 3,
+          "position": [-0.175, 1.38, 0],
+          "normal": [-0.95, 0.2, 0.24],
+          "frame": 0.5,
+          "label": { "en": "Puffed shoulder", "ar": "" },
+          "material": { "en": "A roll of gathered silk set into the top of the sleeve.", "ar": "" },
+          "made": { "en": "Strips of silk were gathered into a rounded puff and stitched into the armhole seam before the sleeve went in.", "ar": "" },
+          "artistry": { "en": "The puff recalls the slashed sleeves of the 1500s. Gustav III wanted a costume that looked Swedish and historic, not borrowed from Versailles.", "ar": "" },
+          "image": { "src": "/images/national-shoulder.webp", "kind": "closeup", "alt": { "en": "The gathered puff at the shoulder", "ar": "" } },
+          "invented": true
+        },
+        {
+          "id": "cape",
+          "side": "back",
+          "tourOrder": 4,
+          "position": [0, 1.1, -0.129],
+          "normal": [0, 0, -1],
+          "frame": 0.6,
+          "label": { "en": "The cape", "ar": "" },
+          "material": { "en": "A silk cape lined in pale silk and edged with a broad embroidered border.", "ar": "" },
+          "made": { "en": "It is gathered into the neckline at the back, so it falls in deep folds from the shoulders.", "ar": "" },
+          "artistry": { "en": "Only seen from behind, the cape turns a close-fitting coat into a ceremonial silhouette. The same floral border as the front ties the two together.", "ar": "" },
+          "image": { "src": "/images/national-cape.webp", "kind": "sketch", "alt": { "en": "Sketch of the cape falling from the shoulders", "ar": "" } },
+          "invented": true
+        }
+      ]
     },
     {
       "id": "costume-b",
       "model": "",
       "yawOffset": 0,
       "accent": "#3E6E8E",
+      "shortTitle": { "en": "Costume B", "ar": "" },
       "title": { "en": "Costume B", "ar": "" },
-      "context": { "en": "Placeholder wearer and place", "ar": "" },
+      "context": { "en": "Placeholder until the third costume is chosen", "ar": "" },
       "credit": { "name": "", "author": "", "url": "", "licence": "" },
-      "hotspots": []
+      "hotspots": [
+        {
+          "id": "front",
+          "side": "front",
+          "tourOrder": 1,
+          "position": [0, 1.2, 0.202],
+          "normal": [0, 0, 1],
+          "frame": 0.55,
+          "label": { "en": "Placeholder front", "ar": "" },
+          "material": { "en": "Placeholder text for the third costume.", "ar": "" },
+          "made": { "en": "Placeholder text for the third costume.", "ar": "" },
+          "artistry": { "en": "Placeholder text for the third costume.", "ar": "" },
+          "image": { "src": "", "kind": "closeup", "alt": { "en": "", "ar": "" } },
+          "invented": true
+        },
+        {
+          "id": "side",
+          "side": "side",
+          "tourOrder": 2,
+          "position": [0.218, 0.9, 0],
+          "normal": [1, 0, 0],
+          "frame": 0.55,
+          "label": { "en": "Placeholder side", "ar": "" },
+          "material": { "en": "Placeholder text for the third costume.", "ar": "" },
+          "made": { "en": "Placeholder text for the third costume.", "ar": "" },
+          "artistry": { "en": "Placeholder text for the third costume.", "ar": "" },
+          "image": { "src": "", "kind": "closeup", "alt": { "en": "", "ar": "" } },
+          "invented": true
+        },
+        {
+          "id": "back",
+          "side": "back",
+          "tourOrder": 3,
+          "position": [0, 1.1, -0.138],
+          "normal": [0, 0, -1],
+          "frame": 0.55,
+          "label": { "en": "Placeholder back", "ar": "" },
+          "material": { "en": "Placeholder text for the third costume.", "ar": "" },
+          "made": { "en": "Placeholder text for the third costume.", "ar": "" },
+          "artistry": { "en": "Placeholder text for the third costume.", "ar": "" },
+          "image": { "src": "", "kind": "sketch", "alt": { "en": "", "ar": "" } },
+          "invented": true
+        }
+      ]
     },
     {
-      "id": "costume-c",
-      "model": "",
+      "id": "parade-armour",
+      "model": "/models/parade-armour.glb",
       "yawOffset": 0,
-      "accent": "#C9A227",
-      "title": { "en": "Costume C", "ar": "" },
-      "context": { "en": "Placeholder wearer and place", "ar": "" },
-      "credit": { "name": "", "author": "", "url": "", "licence": "" },
-      "hotspots": []
+      "accent": "#B89A4E",
+      "shortTitle": { "en": "Parade Armour", "ar": "" },
+      "title": { "en": "The Parade Armour of King Erik XIV", "ar": "" },
+      "context": { "en": "Made for King Erik XIV of Sweden, around 1562", "ar": "" },
+      "credit": {
+        "name": "The Parade Armour of King Erik XIV of Sweden",
+        "author": "The Royal Armoury (Livrustkammaren), Stockholm",
+        "url": "https://sketchfab.com/3d-models/the-parade-armour-of-king-erik-xiv-of-sweden-bd189bba7d9e4924b12826a6d68200d9",
+        "licence": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Changes are listed in scripts/models.config.json."
+      },
+      "hotspots": [
+        {
+          "id": "visor",
+          "side": "front",
+          "tourOrder": 1,
+          "position": [0, 1.55, 0.103],
+          "normal": [0, 0.15, 0.99],
+          "frame": 0.4,
+          "label": { "en": "The visor", "ar": "" },
+          "material": { "en": "Steel, darkened, with raised ornament that was once richly gilded.", "ar": "" },
+          "made": { "en": "The visor pivots on rivets at the sides of the helmet. A single slit lets the wearer see, set on a ridge so a lance point glances away.", "ar": "" },
+          "artistry": { "en": "Even the visor carries figures in relief, so the king's face becomes a sculpted mask.", "ar": "" },
+          "image": { "src": "/images/armour-visor.webp", "kind": "closeup", "alt": { "en": "Close-up of the visor's relief", "ar": "" } },
+          "invented": true
+        },
+        {
+          "id": "breastplate",
+          "side": "front",
+          "tourOrder": 2,
+          "position": [0, 1.1, 0.132],
+          "normal": [0, 0, 1],
+          "frame": 0.5,
+          "label": { "en": "The breastplate", "ar": "" },
+          "material": { "en": "Steel, with ornament beaten up from behind and then gilded.", "ar": "" },
+          "made": { "en": "The armour was probably made in Arboga, then sent to Antwerp, where the goldsmith Elisaeus Libaerts hammered the design from the back and sharpened it from the front.", "ar": "" },
+          "artistry": { "en": "The scenes come from ancient myth, chosen because they could be read as flattering echoes of Swedish history.", "ar": "" },
+          "image": { "src": "/images/armour-breastplate.webp", "kind": "closeup", "alt": { "en": "Close-up of the relief on the breastplate", "ar": "" } },
+          "invented": true
+        },
+        {
+          "id": "pauldron",
+          "side": "side",
+          "tourOrder": 3,
+          "position": [0.236, 1.27, 0.02],
+          "normal": [0.85, 0.25, 0.46],
+          "frame": 0.45,
+          "label": { "en": "Lion shoulder", "ar": "" },
+          "material": { "en": "Overlapping steel plates guard the shoulder, each riveted so it can slide over the next.", "ar": "" },
+          "made": { "en": "The curved plates overlap like roof tiles and are joined with rivets that move in slots, so the arm can still rise.", "ar": "" },
+          "artistry": { "en": "The lion is Sweden's heraldic beast. On the shoulder it is seen from the side, as the king rode past.", "ar": "" },
+          "image": { "src": "/images/armour-pauldron.webp", "kind": "closeup", "alt": { "en": "The lion in relief on the shoulder plate", "ar": "" } },
+          "invented": true
+        },
+        {
+          "id": "backplate",
+          "side": "back",
+          "tourOrder": 4,
+          "position": [0, 1.18, -0.158],
+          "normal": [0, 0, -1],
+          "frame": 0.55,
+          "label": { "en": "The backplate", "ar": "" },
+          "material": { "en": "The back is decorated in the same gilded relief as the front.", "ar": "" },
+          "made": { "en": "Front and back plates are joined at the shoulders and sides by straps and buckles, so attendants could arm the king.", "ar": "" },
+          "artistry": { "en": "Parade armour was made to be seen from every side. In a procession through Stockholm, the crowd saw the king's back as often as his face.", "ar": "" },
+          "image": { "src": "/images/armour-backplate.webp", "kind": "sketch", "alt": { "en": "Sketch of the backplate's decoration", "ar": "" } },
+          "invented": true
+        }
+      ]
     }
   ]
 }

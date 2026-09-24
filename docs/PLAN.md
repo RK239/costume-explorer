@@ -52,7 +52,7 @@ Goal: attract → costume → turn → hotspot → story → switch → idle bac
 - [x] `tokens.css` for colours, sizes and spacing; logical properties only.
 - [x] `content.json` loaded at boot, with `en` and `ar` slots.
 - [x] Push to GitHub (the steps 1–3 commit).
-- [ ] Rakesh: connect Vercel to the repo, and confirm the live URL opens on the iPad.
+- [x] Rakesh: connect Vercel to the repo, and confirm the live URL opens on the iPad. Live: https://costume-explorer.vercel.app (auto-deploys on push to `main`).
 - [x] `?dev=1` shows the stats panel.
 - [x] Rakesh: touch-lock test on the real iPad. All passed; 42 fps on the older test iPad.
 
@@ -79,7 +79,17 @@ Goal: attract → costume → turn → hotspot → story → switch → idle bac
 - [x] Simplified 630k → ~126k triangles through `scripts/models.config.json`.
 - [x] 3.8 MB against the 3 MB budget. Fixed with per-slot texture sizes and dropped tangents: 2.98 MB, ~101 MB GPU.
 
-**Models still to choose: all three.** The dress is dev-only (TurboSquid licence). Search Sketchfab filtered to CC BY + CC0 and Downloadable:
+**Model 3: The National Costume** (Royal Armoury, CC BY-SA 4.0). On stage 2026-09-25 as costume 1: turned, scaled and lifted in the pipeline, 2.91 MB, ~89 MB GPU.
+- [ ] Scan hole in the cape lining (inner right edge): fill in Blender or avoid that angle.
+- [ ] Floating at knee height: decide leave / museum mount rod / set down.
+- [ ] Confirm the estimated height (1.07 m) and lift (0.40 m) by eye.
+
+**Model 4: The Parade Armour of King Erik XIV** (Royal Armoury, CC BY 4.0). On stage 2026-09-25 as costume 3; the King and the TurboSquid dress are retired.
+- [ ] Re-download at 4K texture (the current file is Sketchfab's 1K option).
+- [ ] 450k triangles, 4.53 MB: over budget. Bake a normal map from the 1M original onto ~150k in Blender (Phase 3 at the latest).
+- [ ] Check the frame rate on the iPad 5 with the armour lit.
+
+**Still to choose: one costume** (slot 2): a woman's or non-European garment. Search Sketchfab filtered to CC BY + CC0 and Downloadable:
 https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff1e8a1bb74b0b&licenses=7c23a1ba438d4306920229c12afcb5f9&q=costume&type=models
 
 ## 3. Turntable and camera (~1.5 h)
@@ -97,22 +107,25 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 **Commit** (steps 1–3)
 
 ## 4. Hotspots (~1 h)
-- [ ] DOM markers projected every frame, with opacity fading on the facing test.
-- [ ] Plain ring marker with a 56–64 px touch target; the label goes on the outward side; labels hide while `.spinning` is set.
-- [ ] Real positions placed with the dev tap for every hotspot. Each costume has at least 3 hotspots, with at least 1 on the back.
-- [ ] Seen state: a ring fills once opened.
+- [x] DOM markers projected every frame, with opacity fading on the facing test.
+- [x] Plain ring marker with a 60 px touch target; the label goes on the outward side; labels hide while `.spinning` is set, and fade (not jump) when they change side.
+- [x] Real positions placed for every hotspot (`dev.probe` ray helper, checked with markers on the model). National Costume and Parade Armour have 4 each (front, front, side, back); the costume-2 stand-in has 3 placeholders.
+- [x] Seen state: a ring fills once opened.
+- [x] Checked: the back hotspot only appears (and is only tappable) once the costume is turned round.
 
-*Rakesh, once the hotspot positions are fixed: render the close-ups (long lens, shallow depth of field) and Line Art sketches in Blender from the full-size source models.*
+*Rakesh, now the hotspot positions are fixed: render the close-ups (long lens, shallow depth of field) and Line Art sketches in Blender from the full-size source models. File names are already in content.json (`/images/national-embroidery.webp` etc.); drop them in `public/images/` and they replace the "Image to come" placeholder.*
 
 ## 5. Story (~1 h)
-- [ ] Tapping a hotspot runs one timeline:
+- [x] Tapping a hotspot runs one timeline:
   1. the turntable turns the detail to the camera
   2. the camera pushes in to the hotspot's `frame`
   3. the lens shift makes room for the panel
   4. the panel opens
-- [ ] Panel: three chapters (Material → How it was made → The artistry), tapped through, with no scrolling. The image is shown plainly for now.
-- [ ] Closing the story reverses the timeline, and auto-rotate resumes after the delay.
-- [ ] The selector shows "n/total found".
+- [x] Panel: three chapters (Material → How it was made → The artistry), tapped through, with no scrolling. A missing image shows an "Image to come" placeholder.
+- [x] Closing (× or a tap on the stage) slides the panel out and pulls the camera back; auto-rotate resumes after the delay.
+- [x] Checked in landscape (side panel) and portrait (bottom sheet).
+- [ ] The selector shows "n/total found" (the selector arrives in step 6).
+- [ ] Rakesh: check the English draft copy (all hotspots are `invented: true` until checked against sources).
 
 **Commit** (steps 4–5)
 

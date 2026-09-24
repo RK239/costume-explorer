@@ -26,7 +26,7 @@ Decisions log: docs/DECISIONS.md
 - GSAP for every choreographed move: camera, lights, UI, the tour.
 - No camera-controls or OrbitControls. Visitors turn the costume on its turntable. Only the director moves the camera.
 - All copy (both languages), hotspot data and model credits live in `src/content.json`. No copy hardcoded in JS.
-- Hosting: GitHub → Vercel free tier, auto-deploy on push.
+- Hosting: GitHub → Vercel free tier, auto-deploy on push. Repo: https://github.com/RK239/costume-explorer (private). Live: https://costume-explorer.vercel.app
 - Models:
   - optimised by `npm run models` (`scripts/optimise-models.js`, gltf-transform library): join, weld, optional simplify, drop tangents, WebP textures sized per slot, meshopt compression. Settings and the record of changes per model are in `scripts/models.config.json`.
   - loaded with GLTFLoader + MeshoptDecoder

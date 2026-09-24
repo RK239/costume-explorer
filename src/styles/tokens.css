@@ -16,6 +16,18 @@
   --edge: 40px;                         /* distance from the screen edge */
   --hit: 56px;                          /* smallest touch target; the brief's floor is 44 px */
 
+  /* Surfaces */
+  --plate: #151517;                     /* solid backing for labels and panels */
+  --line: rgb(242 239 233 / 0.18);      /* hairlines and outlines */
+
+  /* Hotspots */
+  --hotspot-hit: 60px;                  /* touch target (brief: at least 44 px) */
+  --hotspot-ring: 26px;                 /* hollow ring, so the detail shows through it */
+
+  /* Story panel */
+  --panel-inline: min(40vw, 480px);     /* landscape: width of the side panel */
+  --panel-block: 46dvh;                 /* portrait: height of the bottom sheet */
+
   /* Camera framing. The director keeps the costume inside the screen minus these bands,
      which are reserved for UI: title at the top, costume selector at the bottom. */
   --frame-top: 96px;
