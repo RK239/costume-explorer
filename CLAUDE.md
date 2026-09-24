@@ -9,11 +9,11 @@ Build order: docs/PLAN.md
 Decisions log: docs/DECISIONS.md
 
 ## How to work with me
-- Work through docs/PLAN.md in order, one step at a time.
+- Work through docs/PLAN.md in order, one step at a time. It has three phases: make it work, make it beautiful, make it solid. Phase 1 looks plain but uses the final structure (timelines, content.json, logical properties, tokens), so polish never means a rebuild.
 - Show your plan for a step before writing code. Stop after each step so I can test on the iPad.
 - After each step, explain what changed and why in 2–3 plain sentences. I have to defend every line in the review.
 - I know Unity, Unreal and Blender well. When explaining a Three.js idea, relate it to those if that helps.
-- Commit small and often, with plain, descriptive messages. Never squash, rebase or force-push; the reviewers read the commit history.
+- Commit at the end of every 2–3 steps (marked in docs/PLAN.md), with a plain, descriptive message that names the steps it covers. Never squash, rebase or force-push; the reviewers read the commit history.
 - When a design decision is made or changed, log it in docs/DECISIONS.md with the alternative we rejected.
 - When I reject one of your suggestions, log it under "Rejected AI suggestions".
 - Stay inside the brief. Camera try-on is out of scope.

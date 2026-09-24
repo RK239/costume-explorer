@@ -11,6 +11,7 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
   - `RoomEnvironment` via `PMREMGenerator` at low intensity as fill (no HDR download)
   - one `SpotLight` key per costume, positioned front-high and a little off-axis so it rakes across the fabric
   - a costume goes dark by tweening its key light intensity and its materials' `envMapIntensity` to near zero. Collect each costume's materials at load.
+  - never toggle a light's `visible`. Three.js recompiles every material when the number of lights changes, which stalls the iPad. Only change intensity.
 - Background: a near-black stage colour.
 - Tone mapping: AgX or Neutral. Rakesh picks by eye and logs the choice. Output is sRGB.
 - Camera: a PerspectiveCamera with a vertical FOV around 30° (roughly a 45 mm full-frame vertical equivalent). Rakesh has the final say on the lens.
@@ -31,7 +32,7 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
   - take the larger distance and add a margin
 - Lens shift: `camera.setViewOffset` moves the costume into the free region when the story panel is open. The perspective doesn't change. Tween the offset with GSAP.
   - Landscape LTR: the panel sits on the right, so shift the costume left.
-  - RTL: mirror that.
+  - RTL: mirror that. The panel sits on the left, so shift the costume right.
   - Portrait: the panel is a bottom sheet, so shift up.
 - Push-in on a hotspot:
   - Turn the turntable so the hotspot faces the camera. With the hotspot's local yaw `a = atan2(nx, nz)` and the camera's yaw from the costume `c`, the target rotation is `c − a`; wrap the difference to [−π, π] for the shortest turn.
@@ -53,6 +54,7 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
 - The main modes are `attract`, `explore`, `story` and `tour`. While a timeline runs between them, the app sits in `transition`.
 - Every change of mode is a function that returns a GSAP timeline.
 - `director.play(tl)` locks input until the timeline completes. The tour is the exception: a touch pauses it with `tl.pause()`.
+- The 45 s idle timer pauses while the tour plays, and restarts when the tour is paused or ends.
 - One loop: `gsap.ticker.add(update)`. `update` advances the turntables, projects the hotspots and renders, so tweens and frames stay in lockstep.
 - Accent colour: tween the `--accent` CSS variable on `:root` with GSAP.
 
@@ -60,6 +62,8 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
 - `index.html` shows the attract still (`<picture>`, with a landscape and a portrait version) and the bilingual headline straight away.
 - Load all three GLBs in parallel. When all three are ready, render the live scene, then crossfade the canvas in over the still.
 - A tap that arrives before the models are ready is queued and handled once they load.
+- Upload every texture to the GPU at load (`renderer.initTexture`, or `renderer.compileAsync` on the whole scene). Otherwise the first switch to a costume stalls while its textures upload.
+- After the models, preload and `decode()` every story image, so a story never opens on a blank image.
 - The attract stills are captured from the live scene in dev mode, so the dissolve is invisible.
 
 ## Content schema (`src/content.json`)

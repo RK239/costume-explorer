@@ -14,6 +14,12 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
     - PlayCanvas: projects live in its cloud editor, which fights normal Git history.
     - Unity/Unreal WebGL: too heavy for iPad Safari in under 3 s. Pixel streaming costs money.
 
+## Build order
+- **Decision:** make it work first, then make it beautiful, then make it solid (see PLAN.md). Phase 1 looks plain but uses the final structure: every mode change is already a GSAP timeline, all copy comes from content.json with `en` and `ar` slots, and the CSS uses logical properties and tokens.
+  - **Why:** a complete, usable app on the iPad early proves the interaction model before time goes into looks. Because the structure is final from the start, polishing means tuning timelines and tokens, not rebuilding.
+  - **Risk:** the attract state and the transitions carry the most weight in the brief, and they come second. Covered by the halfway rule in PLAN.md: if Phase 1 runs over, Phase 1 gives way, not Phase 2.
+  - **Rejected:** building the attract state straight after the camera step (see "Rejected AI suggestions").
+
 ## Stage
 - **Decision:** one dark stage. The three costumes stand in a row on plinths, each with its own spot key; a costume that isn't in focus goes dark.
   - **Why:** a costume switch becomes a camera move on one set, so it can't feel like a page swap. Everything loads once, so nothing ever flashes blank.
@@ -48,10 +54,16 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
 - **Decision:** every camera, light and UI move is a GSAP timeline, and input is locked while one runs.
   - **Why:** camera, light and panel are timed on one timeline, like an edit.
 - **Decision:** the tour is a single timeline, so a touch pauses it and a tap resumes it.
+- **Decision:** the 45 s idle timer pauses while the tour plays.
+  - **Why:** otherwise a visitor who is watching the tour without touching gets sent back to the attract state.
+
+## Legibility
+- **Open:** hotspot label size. On an iPad, 1 CSS px is about 0.19 mm, so a 32 px label has capitals about 4.3 mm tall. At 1.5 m that's about 10 arcminutes, the 20/40 line on an eye chart: readable, but only just. Test 36–40 px semibold at 1.5 m with a tape measure and log the result here.
 
 ## Creative extra
 - **Decision:** guided hotspot tour, ordered front → side → back so it ends on the hidden detail.
-  - **Why:** it reuses the push-in and story timelines, and it works like a shot list.
+  - **Why:** it reuses the push-in and story timelines, and it works like a shot list. It also serves the visitor who won't explore alone.
+  - **Never cut:** it's the only creative extra, so if time runs short it shrinks to the current costume's hotspots rather than going.
   - **Alternative still open:** a raking-light idle, the brief's "subtle idle motion/light" option. Textile conservators use low-angle light to reveal weave and embroidery. Switch to it if the models have strong normal detail.
   - **Rejected:**
     - Sound: questionable in a shared exhibition space, and iOS needs a tap before audio can play.
@@ -69,7 +81,8 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
 
 ## RTL (Arabic, unless changed to Urdu)
 Flips:
-- The story panel moves to the reading-start side, and the lens shift mirrors with it.
+- The story panel moves to the left and the costume shifts right, so an Arabic reader, who starts on the right, still meets the costume first and reads about it after. That's the same order as English. The lens shift mirrors with it.
+  - *Fixed 2026-09-24:* this line used to say the panel moves to "the reading-start side". In Arabic that's the right, where the panel already sits in English, which contradicted ARCHITECTURE.md.
 - Chapter order and progress run right to left.
 - The sketch tilt direction.
 
@@ -94,4 +107,6 @@ Arabic-specific type:
     - The camera eases with a single damping value, with no timeline to sync camera, light and panel.
     - The attract state and transitions would have been CSS effects layered around three viewers rather than directed scenes.
   - Switched to Three.js + GSAP.
+- **2026-09-24: Build the attract state straight after the camera step, instead of at step 7.** Claude proposed it because the brief calls the attract state the most important screen, and building it late risks rushing it.
+  - **Why rejected:** Rakesh chose to get a complete, usable version on the iPad first and polish after. The foundations are built so polish can be added without rework, and the halfway rule in PLAN.md protects the polish time.
 - *(Log more as they happen: the suggestion, why it was rejected, and the date.)*
