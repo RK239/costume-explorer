@@ -45,36 +45,54 @@ Never cut the attract state, the RTL design work, the iPad testing or the README
 Goal: attract → costume → turn → hotspot → story → switch → idle back to attract, usable end to end on the iPad, with a plain look.
 
 ## 1. Skeleton, deploy, touch lock (~45 min)
-- [ ] Vite vanilla project with `three` and `gsap`.
-- [ ] Full-screen canvas plus an overlay layer, using `100dvh`.
-- [ ] Renderer: pixel ratio capped at 2, tone mapping, sRGB output, resize handling.
-- [ ] Apply every touch constraint from CLAUDE.md.
-- [ ] `tokens.css` for colours, sizes and spacing; logical properties only.
-- [ ] `content.json` loaded at boot, with `en` and `ar` slots.
-- [ ] Push to GitHub, connect Vercel, and confirm the live URL opens on the iPad.
-- [ ] `?dev=1` shows the stats panel.
+- [x] Vite vanilla project with `three` and `gsap`.
+- [x] Full-screen canvas plus an overlay layer, using `100dvh`.
+- [x] Renderer: pixel ratio capped at 2, tone mapping, sRGB output, resize handling.
+- [x] Apply every touch constraint from CLAUDE.md.
+- [x] `tokens.css` for colours, sizes and spacing; logical properties only.
+- [x] `content.json` loaded at boot, with `en` and `ar` slots.
+- [x] Push to GitHub (the steps 1–3 commit).
+- [ ] Rakesh: connect Vercel to the repo, and confirm the live URL opens on the iPad.
+- [x] `?dev=1` shows the stats panel.
+- [x] Rakesh: touch-lock test on the real iPad. All passed; 42 fps on the older test iPad.
 
 ## 2. Stage and models (~1 h)
-- [ ] `npm run models`: optimise `models-src/*.glb` into `public/models/` and print the file sizes.
-- [ ] content.json: shape from ARCHITECTURE.md, three costumes, credits filled in, placeholder hotspots.
-- [ ] Load all three GLBs with GLTFLoader + MeshoptDecoder into turntable groups laid out in a row. Stand-in models until the real ones pass the check.
-- [ ] Stage elements:
+- [x] `npm run models`: optimise `models-src/*.glb` into `public/models/` and print the file sizes.
+- [ ] content.json: shape from ARCHITECTURE.md, three costumes, credits filled in, placeholder hotspots. (Shape done; credits wait for the real models.)
+- [x] Load all three GLBs with GLTFLoader + MeshoptDecoder into turntable groups laid out in a row. Stand-in models until the real ones pass the check.
+- [x] Stage elements:
   - RoomEnvironment fill
   - one spot key per costume
   - plinth discs
   - blob shadows
-- [ ] Light-up / go-dark function per costume: key light intensity plus `envMapIntensity`. Never toggle a light's `visible`.
-- [ ] Dev: tap the model to log local position and normal.
+- [x] Light-up / go-dark function per costume: key light intensity plus `envMapIntensity`. Never toggle a light's `visible`.
+- [x] Dev: tap the model to log local position and normal.
+- [x] `?dpr=` flag to measure what sharpness costs; pixel ratio capped at 1.5 for now.
+- [x] Rakesh: test on the iPad 5th gen. `?dpr=1` and `1.5`: 60 fps. `?dpr=2`: 30 fps.
+
+**Model 1: Vintage Asian Dress Belt** (Paradoox, TurboSquid 2382634). Checked 2026-09-25. Passes on triangles (53k), size after compression (56 MB → 2.26 MB), back coverage, orientation and normal-map detail.
+- [x] Exported in centimetres (148 units tall). Rescaled to metres with a headless Blender script into `models-src/`; Rakesh's original files are untouched.
+- [ ] **Licence blocks deployment.** TurboSquid Standard allows WebGL only through Unity, Unreal and Lumberyard exports and forbids open formats that can be opened in public frameworks. A GLB served to three.js is exactly that. Used for local development only (git-ignored); the deployed site shows the stand-in. Needs a CC-BY or CC0 replacement.
+
+**Model 2: Glafira, "Wolves and Sheep"** (CC BY 4.0). Checked 2026-09-25, then rejected by Rakesh (feels low quality) and taken off the stage. The notes below stay as the record of the pipeline test.
+- [x] Licence, scale (metres), orientation (+Z front), back coverage (1870s bustle).
+- [x] Simplified 630k → ~126k triangles through `scripts/models.config.json`.
+- [x] 3.8 MB against the 3 MB budget. Fixed with per-slot texture sizes and dropped tangents: 2.98 MB, ~101 MB GPU.
+
+**Models still to choose: all three.** The dress is dev-only (TurboSquid licence). Search Sketchfab filtered to CC BY + CC0 and Downloadable:
+https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff1e8a1bb74b0b&licenses=7c23a1ba438d4306920229c12afcb5f9&q=costume&type=models
 
 ## 3. Turntable and camera (~1.5 h)
-- [ ] State machine with modes and `director.play(tl)` input locking. Every mode change is a timeline from the start.
-- [ ] `frameCostume()` fits the costume to the free region in both orientations. Lens shift via `setViewOffset`.
-- [ ] Turntable:
+- [x] State machine with modes and `director.play(tl)` input locking. Every mode change is a timeline from the start.
+- [x] `frameCostume()` fits the costume to the free region in both orientations. Lens shift via `setViewOffset`.
+- [x] Turntable:
   - drag, inertia with damping, a velocity clamp
   - auto-rotate resuming after ~3 s with an eased ramp
   - `.spinning` class on fast spins
-- [ ] Single loop on `gsap.ticker`.
-- [ ] Explore one costume end to end on the iPad.
+- [x] Single loop on `gsap.ticker`.
+- [x] Plinth sized from the costume's base, with a front index mark so the turning reads.
+- [x] Explore one costume end to end on the iPad. Rakesh: drag, flick, catch and rotation all work.
+- [x] Production build checked without the dev-only dress: it falls back to the stand-in.
 
 **Commit** (steps 1–3)
 

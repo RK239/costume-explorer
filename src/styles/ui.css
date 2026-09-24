@@ -1,0 +1,36 @@
+/* Plain Phase 1 styles. Logical properties only, so RTL is a switch later. */
+
+.headline {
+  position: absolute;
+  inset-inline-start: var(--edge);
+  inset-block-end: var(--edge);
+  max-inline-size: 60ch;
+}
+
+.headline h1 {
+  margin: 0;
+  font-size: var(--text-display);
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.dev-readout {
+  position: absolute;
+  inset-inline-end: 16px;
+  inset-block-start: 56px;              /* clear of the stats panel */
+  max-inline-size: calc(100% - 32px);
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 8px 12px;
+  font: 13px/1.4 ui-monospace, Menlo, monospace;
+  color: #9fffc4;
+  background: rgb(0 0 0 / 0.7);
+  border-radius: 6px;
+}
+
+.headline p {
+  margin: 0.4em 0 0;
+  font-size: var(--text-body);
+  color: var(--ink-muted);
+}

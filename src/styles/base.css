@@ -1,0 +1,63 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;            /* no bounce and no pull-to-refresh */
+  background: var(--stage);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Touch lock. iPad Safari ignores user-scalable=no, so each behaviour is switched off on its own.
+   The gesture events are blocked in src/ui/touch-lock.js. */
+body {
+  position: fixed;                      /* the page itself can never scroll */
+  inset: 0;
+  touch-action: manipulation;           /* no double-tap zoom */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;          /* no long-press menu */
+  -webkit-tap-highlight-color: transparent;
+}
+
+img {
+  -webkit-user-drag: none;
+}
+
+#app {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 100dvh;
+  overflow: hidden;
+}
+
+#stage {
+  position: absolute;
+  inset: 0;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  touch-action: none;                   /* every touch on the canvas goes to the turntable */
+}
+
+/* The overlay never takes touches itself; only its buttons do, so drags reach the canvas. */
+#overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Safe-area insets are physical by nature, so this is the one place that uses physical sides. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+#overlay button {
+  pointer-events: auto;
+}

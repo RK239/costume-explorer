@@ -1,0 +1,17 @@
+{
+  "_about": "Settings for npm run models. 'defaults' apply to every model; a model's own entry (keyed by its file name in models-src/) overrides them. Each entry's 'changes' is the record of what we altered, which CC BY asks us to state.",
+  "defaults": {
+    "_textureSize": "Longest side in pixels, per texture slot. Colour and normal carry the fabric detail; roughness, metalness and occlusion read the same at half size.",
+    "textureSize": {
+      "baseColorTexture": 2048,
+      "normalTexture": 2048,
+      "metallicRoughnessTexture": 1024,
+      "occlusionTexture": 1024,
+      "emissiveTexture": 1024
+    },
+    "budget": {
+      "fileMB": 3,
+      "gpuMB": 100
+    }
+  }
+}

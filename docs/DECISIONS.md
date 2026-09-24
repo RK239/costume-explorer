@@ -37,12 +37,23 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
   - **Why:** close-ups are authored through hotspots, and the costume stays readable on screen.
 - **Decision:** horizontal drag only.
   - **Why:** garments are read by walking around them, not from above.
+- **Decision (2026-09-25):** the costume follows the finger. A drag turns the costume by the drag distance divided by the costume's on-screen radius, so the fabric under the finger roughly stays under it at any camera distance (×1.3, because the fabric sits nearer the axis than the costume's outer edge).
+  - **Rejected:** a fixed number of degrees per pixel. It feels right at one zoom and slippery or sticky at every other.
+- **Decision:** touching a spinning costume stops it, like a hand on a real turntable. Holding the finger still before lifting releases it with no spin.
+- **Numbers:** auto-rotate 0.25 rad/s (one turn in ~25 s), back 3 s after the last touch with a 1.5 s ease-in; spin clamped at 10 rad/s; inertia decays at 2.2/s; `.spinning` above 3.5 rad/s, cleared below 1.2 rad/s.
+- **Decision:** each plinth has a small index mark at its front edge.
+  - **Why:** a plain disc turning looks still. The mark shows the turn, and shows where the front is when the back is facing.
+  - The plinth is sized from the costume's base (its widest point in the lowest 10 cm), so a gown's hem never hides it.
 
 ## Framing
 - **Decision:** a hotspot push-in stops at a medium shot; the extreme close-up is the story image.
   - **Why:** it's two scales of the same detail, like a medium shot plus an insert, and the garment stays readable on screen.
 - **Decision:** the story panel makes room through lens shift (`setViewOffset`), not by moving or shrinking the costume.
   - **Why:** the perspective stays the same, so it reads as a camera choice rather than a UI resize.
+- **Decision (2026-09-25):** the camera stands level at eye height (1.4 m) and never tilts or pans. It frames the costume with lens shift, like the shift lens on a view camera. It moves only by trucking, raising or dollying.
+  - **Why:** verticals stay vertical, which is how museum costume photography looks. From eye height the visitor looks slightly down onto the plinth, which makes the turntable read. The same lens shift that frames the costume also makes room for the story panel, so there's one mechanism, not two.
+  - **Rejected:** a camera that aims at the costume (`lookAt`). Tilting down converges the verticals, so the costume leans back, and the framing would need a second mechanism for the panel.
+  - *Rakesh to confirm the eye height by eye.*
 - **Decision:** lens around 30° vertical FOV (~45 mm full-frame vertical equivalent). *Rakesh to confirm.*
 - **Decision:** tone mapping AgX or Neutral. *Rakesh to choose by eye and log why.*
 
@@ -56,6 +67,43 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
 - **Decision:** the tour is a single timeline, so a touch pauses it and a tap resumes it.
 - **Decision:** the 45 s idle timer pauses while the tour plays.
   - **Why:** otherwise a visitor who is watching the tour without touching gets sent back to the attract state.
+
+## Performance
+- **Decision:** keep about 40 fps or better on Rakesh's older test iPad, and 60 fps on a current iPad.
+  - **Measured:** 42 fps at step 1 with one stand-in box, pixel ratio 2 and antialiasing on. The costumes, environment light and spot keys will cost more, so the frame rate has to be managed, not just hoped for.
+  - **Why the older iPad counts:** it's the worst case. If the experience holds there, it holds on kiosk hardware.
+  - **Test device:** iPad 5th gen (2017). The kiosk will use a newer iPad.
+- **Decision (2026-09-25):** cap the pixel ratio at 1.5 for now, instead of 2. `?dpr=` overrides it for measuring.
+  - **Why:** the iPad 5th gen has a 2× screen, so at 1.5 it draws about 56% of the pixels. Most of its frame time goes on filling pixels, not on geometry.
+  - **Next:** a start-up quality check picks the pixel ratio once, while the first screen shows. That gives 2× on a strong iPad and less on a weak one.
+  - **Measured (2026-09-25, stand-ins, iPad 5th gen):** pixel ratio 1 and 1.5 both hold 60 fps; 2 drops to 30 fps. This confirms the cost is filling pixels.
+
+## Model pipeline
+- **Decision (2026-09-25):** `npm run models` uses the gltf-transform library, not its command line, so each texture type gets its own size. Rakesh approved the dev-only packages.
+  - **Texture sizes by slot:** colour and normal maps 2K (they carry the weave), roughness/metalness and occlusion 1K (they read the same at half size). All WebP.
+  - **Stored tangents removed:** three.js derives them in the shader when a mesh has none, so they only cost file size and GPU memory. Checked on Glafira at close range: no visible change.
+  - **Primitives joined by material before simplifying:** fewer draw calls (Glafira 7 → 2). It also removes the borders Sketchfab adds when it splits meshes at 65k vertices, which simplifying would otherwise have to preserve.
+  - **GPU budget:** about 100 MB of textures per costume, so all three stay around 300 MB on a 2 GB iPad. The script prints each model's estimate.
+  - **Rejected:** the CLI's single `--texture-size` for every map. Either the roughness maps waste memory, or the colour and normal maps lose the weave.
+  - **Result:** Glafira 3.8 MB → 2.98 MB, ~101 MB GPU (from ~134 MB). The dress 2.26 MB → 2.19 MB.
+
+## Models and licences
+- **Rule:** CC-BY or CC0 only. The site serves each GLB publicly, so anyone can download it; the licence has to allow that.
+- **2026-09-25: Vintage Asian Dress Belt (Paradoox, TurboSquid, free download, Standard licence).** A strong model, but TurboSquid's Standard licence allows WebGL only through Unity, Unreal and Lumberyard exports. It forbids open formats that a public framework can open, which covers a GLB loaded by three.js.
+  - **Decision:** use it for local development only. It's git-ignored, so the deployed site falls back to a stand-in. Find a CC-BY or CC0 replacement.
+  - **Rejected:** obfuscating the GLB to count as "proprietary". It breaks the spirit of the licence, and the brief asks for a free-licensed model credited in the README.
+- **2026-09-25: Costume: Glafira, "Wolves and Sheep" (Aleksei Moskvin and Mariia Moskvina, Department of Clothes Pattern Design, IVSPU; Sketchfab, CC BY 4.0).** Accepted, then **rejected by Rakesh the same day: it feels low quality.** Taken off the stage; its settings below are kept as the record of the pipeline test.
+  - A digital twin of the stage costume for Glafira in Ostrovsky's *Wolves and Sheep* (1875), built from historical block patterns, scanned textiles and actor scans. Documented with DOIs, so most hotspot content can be real rather than invented.
+  - Already in metres, front facing +Z. Violet jacquard, black lace front panel, tiered black satin ruffles, pleated waist, bell sleeves. The back carries an 1870s bustle with black satin drapery over a train: the back-only hotspot.
+  - 630k triangles → ~126k with meshoptimizer (error 0.01, borders locked). Close-ups show no visible damage to the ruffles.
+  - **Budget:** it was 3.8 MB against 3 MB, because it has two full fabric sets (6 textures). Fixed the same day by the per-slot texture sizes in "Model pipeline": now 2.98 MB.
+  - CC BY requires credit and a note of changes: the credit is in content.json, and the changes are recorded in `scripts/models.config.json`.
+- **2026-09-25: Dwarfess's costume from a historical engraving (same department, CC BY 4.0).** Licence fine, but another full-skirted women's gown from the same collection. Next to Glafira, it would weaken "three very different costumes". Not chosen unless Glafira is dropped.
+- **2026-09-25: Dress #3 (La Dame à la licorne) (Mariia Moskvina, CC BY-NC-ND 4.0).** Not usable. NoDerivatives forbids the simplifying we need (366k triangles), and NonCommercial is risky for an exhibition kiosk built for a company.
+- **2026-09-25: Fantasy Outfit (zahrahoseinabadi-zh, CGTrader, free, Royalty Free License (no AI)).** Not usable. CGTrader's licence (§21A.3) requires software products to "take all commercially reasonable measures to prevent the end user from gaining access to the Product", and §21A.6 forbids redistribution unless the model can't be extracted without reverse engineering. A GLB sent to the browser fails both.
+- **Pattern:** every free marketplace model so far (TurboSquid, Blendkit, CGTrader) forbids exactly what a web viewer does: hand the file to the browser. Only open licences (CC BY, CC0) work. Search Sketchfab with the licence filter set to CC BY + CC0 and "Downloadable".
+- **2026-09-25: Full witch costume (Silent Wolf, Blendkit, free, Royalty Free licence).** Not usable. Blendkit's Licensing FAQ allows games and apps only if the models "shouldn't be directly extractable in the distribution"; a GLB served to the browser is. Blendkit's CC0 assets would be fine, but almost none of its garments are CC0.
+  - **Rejected:** adjusting sharpness continuously (dynamic resolution). The costume would visibly soften and sharpen, which reads badly on an exhibition screen.
 
 ## Legibility
 - **Open:** hotspot label size. On an iPad, 1 CSS px is about 0.19 mm, so a 32 px label has capitals about 4.3 mm tall. At 1.5 m that's about 10 arcminutes, the 20/40 line on an eye chart: readable, but only just. Test 36–40 px semibold at 1.5 m with a tape measure and log the result here.

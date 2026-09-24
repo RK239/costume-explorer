@@ -13,3 +13,10 @@ models-src/*
 
 # Local env
 .env*
+
+# Local Claude Code settings
+.claude/
+
+# TurboSquid Standard licence forbids serving the model in an open format on the web.
+# Development only: never commit or deploy. Replace with a CC-BY or CC0 model.
+public/models/vintage-asian-dress-belt.glb

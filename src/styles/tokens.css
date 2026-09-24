@@ -1,0 +1,24 @@
+/* Design tokens. Phase 2 restyles the app by changing these values, not the components. */
+:root {
+  /* Colour */
+  --stage: #0b0b0c;                     /* near-black stage; the WebGL background reads this too */
+  --ink: #f2efe9;                       /* warm off-white text */
+  --ink-muted: rgb(242 239 233 / 0.62);
+  --accent: #b8452e;                    /* tweened to each costume's colour */
+
+  /* Type */
+  --font-sans: system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --text-display: clamp(40px, 6vmin, 72px);
+  --text-body: 22px;
+  --text-label: 32px;                   /* hotspot labels; 36–40 px to be tested at 1.5 m */
+
+  /* Space and touch */
+  --edge: 40px;                         /* distance from the screen edge */
+  --hit: 56px;                          /* smallest touch target; the brief's floor is 44 px */
+
+  /* Camera framing. The director keeps the costume inside the screen minus these bands,
+     which are reserved for UI: title at the top, costume selector at the bottom. */
+  --frame-top: 96px;
+  --frame-bottom: 150px;
+  --frame-inline: 40px;
+}

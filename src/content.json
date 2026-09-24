@@ -1,0 +1,43 @@
+{
+  "exhibition": {
+    "title": { "en": "Costume Explorer", "ar": "" },
+    "hook": { "en": "Each costume hides a detail on its back", "ar": "" }
+  },
+  "costumes": [
+    {
+      "id": "costume-a",
+      "model": "/models/vintage-asian-dress-belt.glb",
+      "yawOffset": 0,
+      "accent": "#B8452E",
+      "title": { "en": "Costume A", "ar": "" },
+      "context": { "en": "Placeholder wearer and place", "ar": "" },
+      "credit": {
+        "name": "Vintage Asian Dress Belt",
+        "author": "Paradoox",
+        "url": "https://www.turbosquid.com/FullPreview/2382634",
+        "licence": "TurboSquid Standard. Development only: the licence forbids serving it in an open format on the web, so it is not deployed."
+      },
+      "hotspots": []
+    },
+    {
+      "id": "costume-b",
+      "model": "",
+      "yawOffset": 0,
+      "accent": "#3E6E8E",
+      "title": { "en": "Costume B", "ar": "" },
+      "context": { "en": "Placeholder wearer and place", "ar": "" },
+      "credit": { "name": "", "author": "", "url": "", "licence": "" },
+      "hotspots": []
+    },
+    {
+      "id": "costume-c",
+      "model": "",
+      "yawOffset": 0,
+      "accent": "#C9A227",
+      "title": { "en": "Costume C", "ar": "" },
+      "context": { "en": "Placeholder wearer and place", "ar": "" },
+      "credit": { "name": "", "author": "", "url": "", "licence": "" },
+      "hotspots": []
+    }
+  ]
+}

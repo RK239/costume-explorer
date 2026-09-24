@@ -18,6 +18,7 @@ Decisions log: docs/DECISIONS.md
 - When I reject one of your suggestions, log it under "Rejected AI suggestions".
 - Stay inside the brief. Camera try-on is out of scope.
 - Allowed dependencies: `three`, `gsap`, `@fontsource/ibm-plex-sans`, `@fontsource/ibm-plex-sans-arabic`. Ask before adding anything else.
+- Allowed dev-only tools (model pipeline, never shipped): `vite`, `@gltf-transform/cli`, `@gltf-transform/core`, `@gltf-transform/functions`, `@gltf-transform/extensions`, `meshoptimizer`, `sharp`.
 
 ## Stack (decided)
 - Vite + vanilla JS/HTML/CSS. No framework.
@@ -27,7 +28,7 @@ Decisions log: docs/DECISIONS.md
 - All copy (both languages), hotspot data and model credits live in `src/content.json`. No copy hardcoded in JS.
 - Hosting: GitHub → Vercel free tier, auto-deploy on push.
 - Models:
-  - optimised with `npx @gltf-transform/cli optimize in.glb out.glb --compress meshopt --texture-compress webp --texture-size 2048`
+  - optimised by `npm run models` (`scripts/optimise-models.js`, gltf-transform library): join, weld, optional simplify, drop tangents, WebP textures sized per slot, meshopt compression. Settings and the record of changes per model are in `scripts/models.config.json`.
   - loaded with GLTFLoader + MeshoptDecoder
 
 ## Hard constraints (check every change against these)
@@ -53,6 +54,7 @@ Decisions log: docs/DECISIONS.md
 
 ## Budgets
 - Each GLB ≤ 3 MB, since all three load at start. Textures ≤ 2K.
+- Each costume's textures ≤ ~100 MB of GPU memory (about 300 MB for all three), so Safari stays well inside its memory limit on a 2 GB iPad. `npm run models` prints the estimate.
 - Pixel ratio capped at 2.
 - No shadow maps (use blob shadows) and no heavy post-processing.
 - Story images and attract stills: WebP, ≤ 200 KB each.

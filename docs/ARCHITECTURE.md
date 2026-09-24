@@ -26,11 +26,14 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
 - No pinch zoom on the model. Close-ups are authored through hotspots, which keeps the costume readable on screen.
 
 ## Camera director
-- `frameCostume(costume, freeRegion)` returns the camera position and look target that fit the costume's bounding box inside the free screen region:
-  - fit height with the vertical FOV
-  - fit width with the horizontal FOV, `2·atan(tan(vfov/2)·aspect)`
+- The camera stands level at eye height (1.4 m) and never rotates. A `shot` object `{ x, y, z, shiftX, shiftY }` holds its position and lens shift, and every camera move is a GSAP tween on it. `update()` applies it each frame.
+- The free region is the screen minus the UI bands in `tokens.css` (`--frame-top`, `--frame-bottom`, `--frame-inline`), so layout and camera share one source.
+- `frameCostume(costume, freeRegion)` returns the shot that fits the costume inside the free screen region:
+  - the subject is the costume's height from the plinth's underside to its top, and its reach from the turntable axis at any angle (`rig.radius`)
+  - fit height with the vertical FOV and width with the horizontal FOV, `2·atan(tan(vfov/2)·aspect)`, each scaled to the region's share of the screen
   - take the larger distance and add a margin
-- Lens shift: `camera.setViewOffset` moves the costume into the free region when the story panel is open. The perspective doesn't change. Tween the offset with GSAP.
+  - lens shift moves the costume's centre from where a level camera sees it to the region's centre
+- Lens shift: `camera.setViewOffset` does all the framing, including making room when the story panel is open. The perspective doesn't change. `shiftX/shiftY` are in NDC units, so a tween survives a resize.
   - Landscape LTR: the panel sits on the right, so shift the costume left.
   - RTL: mirror that. The panel sits on the left, so shift the costume right.
   - Portrait: the panel is a bottom sheet, so shift up.
@@ -38,7 +41,7 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
   - Turn the turntable so the hotspot faces the camera. With the hotspot's local yaw `a = atan2(nx, nz)` and the camera's yaw from the costume `c`, the target rotation is `c − a`; wrap the difference to [−π, π] for the shortest turn.
   - At the same time, dolly the camera toward the hotspot's height until `frame` × costume height is visible (`frame` comes from content; 0.5–0.8 is typical).
   - Push-ins stop at a medium shot. The story image is the insert.
-- Re-run the framing on every `resize` and orientation change.
+- Re-run the framing on every `resize` and orientation change. Mid-transition, it re-frames once the move lands.
 
 ## Hotspots
 - DOM buttons in an overlay layer above the canvas; the overlay itself is `pointer-events: none`.
@@ -105,8 +108,10 @@ src/
   stage/
     scene.js         renderer, camera, environment, lights, plinths, shadows
     costumes.js      loading, turntable groups, light up / go dark
+    stand-in.js      dress-form stand-ins while a costume has no model yet
     turntable.js     drag, inertia, auto-rotate, fast-spin detection
     director.js      framing, lens shift, push-in, mode timelines
+  dev.js             ?dev=1 tools: stats, tap-to-log hotspot positions
   ui/
     hotspots.js      DOM markers, projection, facing fade, label side
     story.js         panel, chapters, image treatments, connecting line
@@ -115,11 +120,15 @@ src/
     idle.js          45 s timer
     tour.js          guided tour timeline
     i18n.js          language switch, dir="rtl"
+    touch-lock.js    blocks Safari's pinch, scroll, long-press and selection
   styles/
-    tokens.css  base.css  rtl.css
+    tokens.css  base.css  ui.css  rtl.css
 public/
   models/  images/  stills/
 models-src/          raw GLBs from Blender (not deployed)
+scripts/
+  optimise-models.js npm run models (gltf-transform library)
+  models.config.json texture sizes per slot, per-model settings, record of changes (CC BY)
 ```
 
 ## Dev tools (`?dev=1`)
