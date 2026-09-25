@@ -80,8 +80,8 @@ Goal: attract → costume → turn → hotspot → story → switch → idle bac
 - [x] 3.8 MB against the 3 MB budget. Fixed with per-slot texture sizes and dropped tangents: 2.98 MB, ~101 MB GPU.
 
 **Model 3: The National Costume** (Royal Armoury, CC BY-SA 4.0). On stage 2026-09-25 as costume 1: turned, scaled and lifted in the pipeline, 2.91 MB, ~89 MB GPU.
-- [ ] Scan hole in the cape lining (inner right edge): fill in Blender or avoid that angle.
-- [ ] Floating at knee height: decide leave / museum mount rod / set down.
+- [x] Scan hole in the cape lining (inner right edge): left as scanned (Rakesh's call).
+- [x] Floating at knee height: stays floating (a mount rod was tried and rejected).
 - [ ] Confirm the estimated height (1.07 m) and lift (0.40 m) by eye.
 
 **Model 4: The Parade Armour of King Erik XIV** (Royal Armoury, CC BY 4.0). On stage 2026-09-25 as costume 3; the King and the TurboSquid dress are retired.
@@ -150,19 +150,21 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 # Phase 2: make it beautiful (~5 h)
 
 ## 8. Attract state (~1.5 h)
-- [ ] Designed to stop someone 2–3 m away: light changing and big type, not fine detail.
-- [ ] Landscape: a wide shot of the lineup.
-  - All three costumes turn out of sync.
-  - Each key light swells in turn, and the headline takes that costume's accent.
-- [ ] Portrait: the camera slowly trucks along the lineup, one costume at a time.
-- [ ] Bilingual headline and hook line (draft: "Each costume hides a detail on its back"), plus a pulsing ring that uses the hotspot visual language.
-- [ ] Tapping a costume dollies straight into it. Tapping anywhere else enters the costume currently lit.
+- [x] Designed to stop someone 2–3 m away: light changing and big type, not fine detail. Rakesh: on the old lineup the costumes were too small to see from a distance.
+- [x] One loop for both orientations: a wide shot of the lineup (all three turning out of sync, softly lit), then each costume in turn as a hero shot, filling the height beside the headline while its key light swells and the others fall dark. The headline's accent follows.
+- [x] The hero turns once, pausing with its back to the visitor; a teaser ring pulses on its back hotspot.
+- [x] Headline (Rakesh's wording): "Costume Explorer" / "Every costume has its story" / "Touch the costume to begin", with a breathing ring in the hotspots' visual language. Landscape: a poster column at the inline end. Portrait: below the costume. (Arabic in step 11.)
+- [x] A tap enters the costume in the hero shot; in the wide shot, the one nearest the touch.
+- [x] Rakesh's review: bigger costumes on the main page. Revised: 1.8 m spacing, hero shots framed on the garment, tighter margins, narrower headline column. (A mount rod was tried and removed at Rakesh's request.)
+- [x] Also from the review: the story panel is a side column in portrait too, and a costume title card shows while exploring.
+- [ ] Rakesh: check the revision on the iPad from 2–3 m away.
 
 ## 9. Transitions (~1 h)
-- [ ] Timing and easing pass on every timeline.
-- [ ] Connected story: the close-up scales in from the ring's screen position, and a line draws from the ring to the panel.
-- [ ] Costume switch: the next costume arrives mid-turn and settles facing front; `--accent` tweens to the new colour.
-- [ ] First reveal: the first time a back hotspot turns into view, it blooms once.
+- [x] Timing and easing pass on every timeline: all durations and eases now come from motion tokens in `src/motion.js`.
+- [x] Connected story: the close-up grows out of the ring into its place in the panel, and a line draws from the ring to the panel (and follows the ring). Both retract when the story closes, including from a switch or the idle reset.
+- [x] Costume switch: the next costume keeps turning the way it was going and settles facing front as the camera lands; `--accent` tweens to the new colour.
+- [x] First reveal: the first time a back hotspot turns into view during a visit, it blooms once (checked: not again on later turns; the idle reset clears it for the next visitor).
+- [ ] For step 10: give the panel's image a guaranteed share of the panel's height. On short panels the text currently squeezes it.
 
 **Commit** (steps 8–9)
 
@@ -209,6 +211,7 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
   - the idle timeout firing during a story and during the tour
   - taps during transitions and before the models finish loading
 - [ ] Stand 1.5 m away and check that hotspot labels are readable; note the result for the defence.
+- [ ] Soak test: leave the kiosk cycling (attract → idle resets) for a few hours from a fresh Safari, and check the frame rate holds. A kiosk runs for days, so a slow memory leak would matter.
 - [ ] Watch the frame rate on the stats panel with all three costumes lit.
 
 ## 15. README and defence prep (~45 min)

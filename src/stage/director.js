@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { state } from '../state.js';
-import { lightUp, goDark } from './costumes.js';
+import { lightUp, goDark, lightTo } from './costumes.js';
+import { MOTION } from '../motion.js';
 
 // The director owns the camera. Visitors never move it; every move is a GSAP tween on `shot`.
 //
@@ -12,8 +13,11 @@ import { lightUp, goDark } from './costumes.js';
 
 const EYE_HEIGHT = 1.4;   // metres; a standing visitor looking slightly down at the plinth
 const MARGIN = 1.1;       // breathing room around the framed costume
-const MOVE = { duration: 1.6, ease: 'power2.inOut' };
 const PANEL_GAP = 24;     // px between the story panel and the costume's region
+const ATTRACT_GLOW = 0.55; // light level of every costume in the attract wide shot
+const ATTRACT_EDGE = 24;   // px the attract framing keeps from the screen's top and bottom
+const HERO_MARGIN = 1.03;  // hero shots fill the frame: almost no breathing room
+const HERO_FLOOR = 0.06;   // m of mount or plinth a hero shot keeps below the garment
 
 export function createDirector(stage, rigs) {
   const { camera, renderer } = stage;
@@ -26,6 +30,10 @@ export function createDirector(stage, rigs) {
   // Where the story panel sits on screen, in px, supplied by story.js (the director doesn't
   // read the DOM itself). Its layout position, ignoring the slide-in transform.
   let panelRect = () => ({ left: 0, top: 0, width: 0, height: 0 });
+  // The turntables, set by main.js once they exist (they need the director first).
+  let turntables = null;
+  // Same for the attract headline, supplied by attract.js.
+  let headlineRect = () => ({ left: 0, top: 0, width: 0, height: 0 });
 
   const viewport = () => ({ width: canvas.clientWidth, height: canvas.clientHeight });
   // Same test as the CSS (@media (orientation: portrait)), so layout and camera never disagree.
@@ -42,15 +50,13 @@ export function createDirector(stage, rigs) {
     return { left: inline, top, width: width - 2 * inline, height: height - top - bottom };
   }
 
-  // The free region minus the story panel, taken from where the panel actually sits.
-  // Landscape: the panel is at the inline end (right in English, left in Arabic).
-  // Portrait: it's a sheet above the selector.
+  // The free region minus the story panel, taken from where the panel actually sits: a column at
+  // the inline end (right in English, left in Arabic) in both orientations. A costume is tall and
+  // narrow, so it keeps the full height beside the panel. (Rakesh's call: a bottom sheet in
+  // portrait halved the costume's height.)
   function storyRegion() {
     const region = freeRegion();
     const panel = panelRect();
-    if (isPortrait()) {
-      return { ...region, height: Math.max(80, panel.top - PANEL_GAP - region.top) };
-    }
     if (isRTL()) {
       const left = panel.left + panel.width + PANEL_GAP;
       return { ...region, left, width: Math.max(80, region.left + region.width - left) };
@@ -58,10 +64,32 @@ export function createDirector(stage, rigs) {
     return { ...region, width: Math.max(80, panel.left - PANEL_GAP - region.left) };
   }
 
+  // The attract composition: the costume takes the part of the screen the headline leaves free.
+  // Landscape: the headline is a column at the inline end, the costume beside it, like a poster.
+  // Portrait: the headline sits at the bottom, the costume above.
+  function attractRegion() {
+    const { width, height } = viewport();
+    const text = headlineRect();
+    const inline = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--frame-inline'));
+    if (isPortrait()) {
+      return {
+        left: inline, top: ATTRACT_EDGE, width: width - 2 * inline,
+        height: Math.max(80, text.top - PANEL_GAP - ATTRACT_EDGE),
+      };
+    }
+    const top = ATTRACT_EDGE;
+    const regionHeight = height - 2 * ATTRACT_EDGE;
+    if (isRTL()) {
+      const left = text.left + text.width + PANEL_GAP;
+      return { left, top, width: Math.max(80, width - inline - left), height: regionHeight };
+    }
+    return { left: inline, top, width: Math.max(80, text.left - PANEL_GAP - inline), height: regionHeight };
+  }
+
   // The shot that fits a subject inside a screen region.
   // subject: { x, bottom, top, radius } in metres, standing on the turntable axis at z = 0.
   // region: { left, top, width, height } in CSS pixels.
-  function fit(subject, region, cameraY = EYE_HEIGHT) {
+  function fit(subject, region, cameraY = EYE_HEIGHT, margin = MARGIN) {
     const { width: W, height: H } = viewport();
     const t = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
     const aspect = W / H;
@@ -72,7 +100,7 @@ export function createDirector(stage, rigs) {
     const width = subject.radius * 2;
     const forHeight = (height * H) / (2 * region.height * t);
     const forWidth = (width * W) / (2 * region.width * t * aspect);
-    const distance = Math.max(forHeight, forWidth) * MARGIN;
+    const distance = Math.max(forHeight, forWidth) * margin;
 
     // Lens shift: move the subject's centre from where a level camera sees it to the region's centre.
     const centreY = (subject.top + subject.bottom) / 2;
@@ -100,6 +128,19 @@ export function createDirector(stage, rigs) {
 
   const frameCostume = (rig, region = freeRegion()) => fit(subjectOf(rig), region);
   const frameLineup = (region = freeRegion()) => fit(lineupSubject(), region);
+  // Attract shots: the whole lineup, or one costume as large as the composition allows. A hero
+  // shot frames the garment itself, not its plinth: a mounted garment's rod and plinth run out
+  // of the bottom of the frame, so the costume, not the air below it, fills the height.
+  const wideShot = () => frameLineup(attractRegion());
+  function heroShot(rig) {
+    const subject = {
+      x: rig.turntable.position.x,
+      bottom: Math.max(rig.bottom, rig.box.min.y - HERO_FLOOR),
+      top: rig.top,
+      radius: rig.garmentRadius,
+    };
+    return fit(subject, attractRegion(), EYE_HEIGHT, HERO_MARGIN);
+  }
 
   // Turntable angle that turns a hotspot's normal straight at the camera. The camera looks at
   // the costume from +Z, so the normal's yaw a = atan2(nx, nz) must become 0: target = −a,
@@ -117,13 +158,14 @@ export function createDirector(stage, rigs) {
     const detailX = rig.turntable.position.x + px * Math.cos(angle) + pz * Math.sin(angle);
     const span = hotspot.frame * (rig.top - rig.bottom);
     const centreY = THREE.MathUtils.clamp(py, rig.bottom + span / 2, rig.top - span / 2);
-    const subject = { x: detailX, bottom: centreY - span / 2, top: centreY + span / 2, radius: span * 0.4 };
+    // A crop narrower than it is tall, to suit the tall column beside the panel.
+    const subject = { x: detailX, bottom: centreY - span / 2, top: centreY + span / 2, radius: span * 0.3 };
     return fit(subject, storyRegion(), centreY);
   }
 
   // The shot the current mode should hold, used after a resize.
   function shotForMode() {
-    if (state.mode === 'attract') return frameLineup();
+    if (state.mode === 'attract') return wideShot(); // attract.js re-frames its own hero shots
     const rig = rigs[state.focus];
     if (state.mode === 'story' && state.story) return detailShot(rig, state.story.hotspot, rig.turntable.rotation.y);
     return frameCostume(rig);
@@ -154,41 +196,63 @@ export function createDirector(stage, rigs) {
     Object.assign(shot, target);
   }
 
-  const setAccent = (rig) => gsap.to(document.documentElement, {
-    '--accent': rig.data.accent, duration: MOVE.duration, ease: 'power1.inOut',
+  const accentTo = (color, duration = MOTION.camera.duration) => gsap.to(document.documentElement, {
+    '--accent': color, duration, ease: 'power1.inOut',
   });
+  const setAccent = (rig) => accentTo(rig.data.accent);
 
-  // First frame: the lineup, all lit, no move.
-  function startInAttract() {
-    state.mode = 'attract';
-    for (const rig of rigs) rig.turntable.visible = true;
-    cut(frameLineup());
+  // A camera move that isn't a mode change (the attract loop), so it doesn't lock input:
+  // a touch can interrupt it at any moment.
+  function glide(target, duration = MOTION.glide.duration) {
+    gsap.killTweensOf(shot);
+    return gsap.to(shot, { ...target, duration, ease: MOTION.glide.ease });
   }
 
-  // Back to the lineup: every costume shows and lights up, the camera pulls back.
+  // First frame: the attract wide shot, every costume softly lit, no move.
+  function startInAttract() {
+    state.mode = 'attract';
+    for (const rig of rigs) {
+      rig.turntable.visible = true;
+      lightTo(rig, ATTRACT_GLOW, 0);
+    }
+    cut(wideShot());
+  }
+
+  // Back to the lineup: every costume shows at the attract glow, the camera pulls back.
   // `extra` lets the caller fold other moves (closing a story) into the same timeline.
   function toAttract(extra) {
     const timeline = gsap.timeline();
     if (extra) timeline.add(extra, 0);
     for (const rig of rigs) rig.turntable.visible = true;
-    rigs.forEach((rig) => timeline.add(lightUp(rig), 0.2));
-    timeline.to(shot, { ...frameLineup(), ...MOVE }, 0.2);
+    rigs.forEach((rig) => timeline.add(lightTo(rig, ATTRACT_GLOW), 0.2));
+    timeline.to(shot, { ...wideShot(), ...MOTION.camera }, 0.2);
     return play(timeline, 'attract');
   }
 
   // Into one costume (from the lineup or another costume): it lights up, the others go dark,
-  // the camera travels to it and the accent colour follows. Once there, the others hide, so
-  // they cost nothing to draw. `extra` folds another move (closing a story) into the timeline.
+  // the camera travels to it and the accent colour follows. The costume arrives mid-turn and
+  // settles facing the visitor as the camera lands, so the first view is always its front.
+  // Once there, the others hide, so they cost nothing to draw. `extra` folds another move
+  // (closing a story) into the timeline.
   function toCostume(index, extra) {
     const rig = rigs[index];
     state.focus = index;
     rig.turntable.visible = true;
+    const rotation = rig.turntable.rotation;
+    turntables?.hold(index);
     const timeline = gsap.timeline({
-      onComplete: () => rigs.forEach((r, i) => { r.turntable.visible = i === index; }),
+      onComplete: () => {
+        rigs.forEach((r, i) => { r.turntable.visible = i === index; });
+        turntables?.free(index); // auto-rotate eases back in after the usual pause
+      },
     });
     if (extra) timeline.add(extra, 0);
     rigs.forEach((r, i) => timeline.add(i === index ? lightUp(r) : goDark(r), 0));
-    timeline.to(shot, { ...frameCostume(rig), ...MOVE }, 0);
+    timeline.to(shot, { ...frameCostume(rig), ...MOTION.camera }, 0);
+    // Keep turning the way it was going, and land on the next front (never more than a turn).
+    const front = rotation.y + wrapAngle(-rotation.y);
+    const settle = front > rotation.y ? front : front + Math.PI * 2;
+    timeline.to(rotation, { y: settle, duration: MOTION.camera.duration, ease: 'power2.out' }, 0);
     timeline.add(setAccent(rig), 0);
     return play(timeline, 'explore');
   }
@@ -199,13 +263,13 @@ export function createDirector(stage, rigs) {
   function pushIn(rig, hotspot) {
     const angle = facingAngle(rig, hotspot);
     return gsap.timeline()
-      .to(rig.turntable.rotation, { y: angle, duration: 1.3, ease: 'power2.inOut' }, 0)
-      .to(shot, { ...detailShot(rig, hotspot, angle), duration: 1.4, ease: 'power2.inOut' }, 0.1);
+      .to(rig.turntable.rotation, { y: angle, ...MOTION.turn }, 0)
+      .to(shot, { ...detailShot(rig, hotspot, angle), ...MOTION.push }, 0.1);
   }
 
   // Story out: back to the full costume in the explore framing.
   function pullBack(rig) {
-    return gsap.timeline().to(shot, { ...frameCostume(rig), duration: 1.1, ease: 'power2.inOut' }, 0);
+    return gsap.timeline().to(shot, { ...frameCostume(rig), ...MOTION.pull }, 0);
   }
 
   // Pixels on screen per radian of turn at the costume's outer edge, for the current shot.
@@ -232,9 +296,16 @@ export function createDirector(stage, rigs) {
     shot,
     get locked() { return locked; },
     set panelRect(fn) { panelRect = fn; },
+    set turntables(t) { turntables = t; },
+    set headlineRect(fn) { headlineRect = fn; },
+    attractGlow: ATTRACT_GLOW,
     freeRegion,
     frameCostume,
     frameLineup,
+    wideShot,
+    heroShot,
+    glide,
+    accentTo,
     cut,
     play,
     startInAttract,

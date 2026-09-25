@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 import { state } from '../state.js';
 import { t } from './i18n.js';
+import { MOTION } from '../motion.js';
 
 // Hotspot markers: buttons in the overlay that follow a point on the costume every frame.
 // Like a world-space marker drawn as screen-space UI in Unity: the 3D point is projected
@@ -28,14 +29,16 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
 
     const ring = document.createElement('span');
     ring.className = 'hotspot__ring';
+    const bloom = document.createElement('span');
+    bloom.className = 'hotspot__bloom';
     const label = document.createElement('span');
     label.className = 'hotspot__label';
     label.textContent = t(data.label);
-    el.append(ring, label);
+    el.append(bloom, ring, label);
     layer.append(el);
 
     const marker = {
-      rig, data, el, label,
+      rig, data, el, label, bloom,
       key: `${rig.id}:${data.id}`,
       position: new THREE.Vector3(...data.position),
       normal: new THREE.Vector3(...data.normal).normalize(),
@@ -55,6 +58,9 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
 
   let layerShown = false;
   let labelsShown = true;
+  // Back hotspots that have bloomed this visit. The first time one turns into view it blooms
+  // once: the reward for turning the costume. Cleared with the seen state on idle reset.
+  const bloomed = new Set();
 
   // Called every frame from the main loop, after the camera has moved.
   function update() {
@@ -69,7 +75,8 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
     const labels = !turntables.spinning && state.mode === 'explore';
     if (labels !== labelsShown) {
       labelsShown = labels;
-      gsap.to(markers.map((m) => m.label), { autoAlpha: labels ? 1 : 0, duration: 0.25 });
+      // overwrite: the newest instruction wins over any fade still running (e.g. a side flip).
+      gsap.to(markers.map((m) => m.label), { autoAlpha: labels ? 1 : 0, duration: 0.25, overwrite: true });
     }
 
     const width = canvas.clientWidth;
@@ -126,8 +133,15 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
         marker.el.classList.toggle('is-right', side === 'right');
         // Changing side fades the label back in rather than jumping across.
         if (flipping && labelsShown) {
-          gsap.fromTo(marker.label, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3, ease: 'power1.out' });
+          gsap.fromTo(marker.label, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3, ease: 'power1.out', overwrite: true });
         }
+      }
+
+      if (marker.data.side === 'back' && state.mode === 'explore' && opacity >= TAPPABLE && !bloomed.has(marker.key)) {
+        bloomed.add(marker.key);
+        gsap.fromTo(marker.bloom,
+          { scale: 1, autoAlpha: 0.95 },
+          { scale: 3, autoAlpha: 0, ...MOTION.bloom, repeat: 1, repeatDelay: 0.15 });
       }
 
       const style = marker.el.style;
@@ -152,7 +166,17 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
 
   function resetSeen() {
     state.seen.clear();
+    bloomed.clear();
     for (const marker of markers) marker.el.classList.remove('is-seen');
+  }
+
+  // Where a hotspot is on screen right now, from the 3D projection (no layout read), so the
+  // story's connecting line can follow the ring every frame cheaply.
+  function project(rig, data) {
+    world.set(...data.position);
+    rig.turntable.localToWorld(world);
+    ndc.copy(world).project(camera);
+    return { x: ((ndc.x + 1) / 2) * canvas.clientWidth, y: ((1 - ndc.y) / 2) * canvas.clientHeight };
   }
 
   // Screen position of a hotspot right now: story.js starts its connection from here.
@@ -162,7 +186,7 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   }
 
-  return { update, markSeen, resetSeen, screenPosition };
+  return { update, markSeen, resetSeen, screenPosition, project };
 }
 
 function smoothstep(edge0, edge1, x) {

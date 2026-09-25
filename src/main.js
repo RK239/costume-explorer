@@ -14,6 +14,7 @@ import { createHotspots } from './ui/hotspots.js';
 import { createStory } from './ui/story.js';
 import { createSelector } from './ui/selector.js';
 import { createIdle } from './ui/idle.js';
+import { createLabel } from './ui/label.js';
 
 lockTouch();
 
@@ -29,8 +30,9 @@ const costumes = content.costumes.map((c) => (flags.skip.includes(c.id) ? { ...c
 const rigs = await loadCostumes(stage.scene, costumes, { onStatus: devTools?.status });
 const director = createDirector(stage, rigs);
 const turntables = createTurntables({ rigs, canvas, overlay, director });
+director.turntables = turntables;
 
-const attract = createAttract({ overlay, content, rigs, camera: stage.camera, canvas, director, turntables });
+const attract = createAttract({ overlay, content, rigs, stage, director, turntables });
 
 // Hotspots open stories; a story marks its hotspot as seen.
 let story = null;
@@ -40,6 +42,7 @@ const hotspots = createHotspots({
 });
 story = createStory({ overlay, content, director, turntables, hotspots });
 const selector = createSelector({ overlay, content, rigs, director, story });
+const label = createLabel({ overlay, rigs });
 devTools?.attach({ stage, rigs, director, turntables });
 
 // After 45 s with no touch: close any story, forget what was found (the next person is a new
@@ -62,7 +65,10 @@ const idle = createIdle({
 director.startInAttract();
 // ?focus=n skips the attract state for testing.
 if (flags.focus !== null) {
-  gsap.delayedCall(0.8, () => director.toCostume(Math.min(Math.max(flags.focus, 0), rigs.length - 1)));
+  gsap.delayedCall(0.8, () => {
+    attract.stop();
+    director.toCostume(Math.min(Math.max(flags.focus, 0), rigs.length - 1));
+  });
 }
 
 // One loop for everything. GSAP's ticker drives both the tweens and the frames, so a camera
@@ -73,7 +79,9 @@ gsap.ticker.add((time, deltaMs) => {
   director.update();
   stage.camera.updateMatrixWorld();
   hotspots.update();
+  story.update();
   selector.update();
+  label.update();
   attract.update();
   stage.render();
   stats?.end();

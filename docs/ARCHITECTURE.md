@@ -72,7 +72,7 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
 ## Content schema (`src/content.json`)
 ```json
 {
-  "exhibition": { "title": { "en": "", "ar": "" }, "hook": { "en": "", "ar": "" } },
+  "exhibition": { "title": { "en": "", "ar": "" }, "subtitle": { "en": "", "ar": "" } },
   "ui": {
     "chapters": { "material": {}, "made": {}, "artistry": {} },
     "close": {}, "found": { "en": "{n} of {total} found" }, "imagePending": {}, "touchToBegin": {}
@@ -117,11 +117,13 @@ src/
     stand-in.js      dress-form stand-ins while a costume has no model yet
     turntable.js     drag, inertia, auto-rotate, fast-spin detection
     director.js      framing, lens shift, push-in, mode timelines
-  dev.js             ?dev=1 tools: stats, tap-to-log hotspot positions
+  motion.js          motion tokens: every duration and ease
+  dev.js             ?dev=1 tools: stats, load status, probe, tap-to-log hotspot positions
   ui/
     hotspots.js      DOM markers, projection, facing fade, label side
     story.js         panel, chapters, image treatments, connecting line
-    selector.js      costume thumbnails, "n/total found"
+    selector.js      costume buttons, "n of total found"
+    label.js         the costume's title card while exploring
     attract.js       attract timeline and headline
     idle.js          45 s timer
     tour.js          guided tour timeline

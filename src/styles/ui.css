@@ -6,31 +6,131 @@ button {
   color: inherit;
 }
 
-/* ── Attract headline ─────────────────────────────────────────────── */
+/* ── Attract state ────────────────────────────────────────────────── */
 
-.headline {
+/* Landscape: a column at the inline end, the costume beside it, like an exhibition poster.
+   Sized to read from 2–3 m. The director frames the costume in the space this leaves. */
+.attract {
   position: absolute;
-  inset-inline-start: var(--edge);
-  inset-block-end: var(--edge);
-  max-inline-size: 60ch;
+  inset-block: var(--edge);
+  inset-inline-end: var(--edge);
+  inline-size: var(--attract-inline);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.headline h1 {
+@media (orientation: portrait) {
+  .attract {
+    inset-block: auto var(--edge);
+    inset-inline: var(--edge);
+    inline-size: auto;
+  }
+}
+
+/* The accent rule carries the hero costume's colour, so the screen changes with it. */
+.attract__rule {
+  display: block;
+  inline-size: 72px;
+  block-size: 5px;
+  margin-block-end: 28px;
+  background: var(--accent);
+  border-radius: 3px;
+}
+
+.attract__title {
   margin: 0;
-  font-size: var(--text-display);
-  font-weight: 600;
-  line-height: 1.05;
+  font-size: var(--text-attract-title);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.015em;
 }
 
-.headline p {
-  margin: 0.4em 0 0;
-  font-size: var(--text-body);
+.attract__subtitle {
+  margin: 0.5em 0 0;
+  font-size: var(--text-attract-subtitle);
+  line-height: 1.25;
   color: var(--ink-muted);
 }
 
-.headline .headline__invite {
-  margin-block-start: 1.2em;
-  color: var(--ink);
+.attract__invite {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 2em 0 0;
+  font-size: var(--text-attract-invite);
+  font-weight: 600;
+}
+
+/* Same hollow ring as a hotspot: the invitation speaks the hotspots' visual language. */
+.attract__ring {
+  flex: none;
+  inline-size: 30px;
+  block-size: 30px;
+  border: 3px solid var(--accent);
+  border-radius: 50%;
+}
+
+/* The teaser on the hero's back hotspot. Placed from the 3D projection, like a hotspot,
+   so it uses physical left/top on purpose. */
+.teaser {
+  position: absolute;
+  left: 0;
+  top: 0;
+  inline-size: var(--hotspot-hit);
+  block-size: var(--hotspot-hit);
+  margin: calc(var(--hotspot-hit) / -2) 0 0 calc(var(--hotspot-hit) / -2);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.teaser__ring,
+.teaser__pulse {
+  position: absolute;
+  inset: calc((var(--hotspot-hit) - var(--hotspot-ring)) / 2);
+  border-radius: 50%;
+}
+
+.teaser__ring {
+  border: 3px solid var(--ink);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6), inset 0 0 0 1px rgb(0 0 0 / 0.6);
+}
+
+.teaser__pulse {
+  border: 2px solid var(--accent);
+}
+
+/* ── Costume title card (explore) ─────────────────────────────────── */
+
+/* Centred in the top band the camera keeps free, above the costume. */
+.costume-label {
+  position: absolute;
+  inset-block-start: 22px;
+  inset-inline: var(--frame-inline);
+  text-align: center;
+  pointer-events: none;
+}
+
+.costume-label__rule {
+  display: block;
+  inline-size: 48px;
+  block-size: 4px;
+  margin: 0 auto 10px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.costume-label__title {
+  margin: 0;
+  font-size: var(--text-costume-title);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.costume-label__context {
+  margin: 0.35em 0 0;
+  font-size: var(--text-costume-context);
+  color: var(--ink-muted);
 }
 
 /* ── Hotspots ─────────────────────────────────────────────────────── */
@@ -63,6 +163,16 @@ button {
   border: 3px solid var(--ink);
   border-radius: 50%;
   box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6), inset 0 0 0 1px rgb(0 0 0 / 0.6);
+}
+
+/* First reveal: a back hotspot's ring swells and fades the first time it turns into view. */
+.hotspot__bloom {
+  position: absolute;
+  inset: calc((var(--hotspot-hit) - var(--hotspot-ring)) / 2);
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* Seen state: the ring fills once its story has been opened. */
@@ -105,15 +215,7 @@ button {
   border-radius: 12px;
   pointer-events: auto;              /* taps on the panel never reach the stage */
   overflow: hidden;
-}
-
-@media (orientation: portrait) {
-  .story {
-    inset-block: auto var(--frame-bottom);   /* above the selector, which stays visible */
-    inset-inline: var(--edge);
-    inline-size: auto;
-    block-size: var(--panel-block);
-  }
+  container-type: inline-size;       /* the tabs adapt to the panel's own width */
 }
 
 .story__close {
@@ -161,6 +263,12 @@ button {
   border-radius: 8px;
 }
 
+/* A narrow panel (portrait) stacks the chapters, so no tab label wraps or clips. */
+@container (max-width: 420px) {
+  .story__tabs { flex-direction: column; gap: 6px; }
+  .story__tab { min-block-size: 48px; text-align: start; padding-inline: 14px; }
+}
+
 .story__tab[aria-selected="true"] {
   background: var(--ink);
   color: var(--stage);
@@ -203,6 +311,40 @@ button {
 
 .story.is-pending .story__image { visibility: hidden; }
 .story.is-pending .story__pending { display: grid; }
+
+/* The connected transition: a hairline from the hotspot ring to the panel, and the close-up
+   growing out of the ring. Both placed from screen coordinates, so physical on purpose. */
+.story-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.story-line path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.story-flyer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  background: var(--plate) center / cover no-repeat;
+  border: 2px solid var(--ink);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.45);
+}
+
+.story-flyer.is-pending {
+  border-style: dashed;
+  border-color: var(--line);
+}
 
 /* ── Costume selector ─────────────────────────────────────────────── */
 

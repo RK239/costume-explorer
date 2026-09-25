@@ -94,6 +94,47 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
 - **Decision:** idle reset is one timeline: close the story, clear found state, reset the language, back to the lineup with every costume lit. If a move is already running when the timer fires, it retries a second later.
 - **Fix:** `director.play()` now keeps a timeline's own `onComplete`. Setting its own callback had silently replaced the one that hides the other costumes after a switch; a scripted run caught it.
 
+## Attract state (step 8)
+- **Problem (Rakesh, on the iPad):** on the lineup, each costume got a third of the width, about 5 cm tall on an 11" screen. Too small to stop anyone from a distance.
+- **Decision:** a loop like a film sequence, about 36 s: a wide shot (3.5 s), then each costume as a hero shot (~8 s), then back to the wide shot.
+  - In the hero shot, the costume fills the height of its side of the screen, about 2.4× larger than on the lineup. Its key light swells while the others fall to 10%. Changing light is what catches the eye from across a room.
+  - The wide shot stays, briefly, so visitors see there are three. It's the only place all three are shown together (a "Your call" answer).
+  - **Rejected:** the static lineup (too small from a distance); cycling hero shots only (the visitor never learns there are three).
+- **Decision:** one headline position for the whole loop, laid out like a poster. Landscape: a column at the inline end, with the costume framed beside it through lens shift. Portrait: headline below, costume above. Only the camera moves; the type never jumps.
+- **Decision:** the hero turns once: it settles facing front as the camera arrives, turns to show its back, pauses there for 1.6 s, and turns home. While its back faces the visitor, a ring pulses on the back hotspot. It shows, without words, that there's something to find by turning.
+- **Decision:** the headline's accent rule and the invitation's ring take the hero costume's accent colour, so the whole screen changes with the costume.
+- **Decision:** a tap enters the costume in the hero shot, wherever the finger lands (the one being shown is the one the visitor means). In the wide shot, the costume nearest the touch.
+- **Decision:** the loop is not a locked transition. A touch interrupts it at any moment; the idle reset starts it again from the wide shot.
+- **Seen in the hero shots:** the National Costume's cape scan hole and its 40 cm float above the plinth are much more visible at this size. Both are decisions in "Models and licences".
+- **Revision (2026-09-25, after Rakesh's iPad review: "make the costumes bigger on the main page"):**
+  - Costumes stand 1.8 m apart instead of 3 m. The wide shot is about 1.6× larger, and in a hero shot the dimmed neighbours at the edges read as a gallery around it.
+  - Hero shots frame the garment, not the plinth: 6 cm below the garment, a 3% margin, and 24 px from the screen edges. A mounted costume's rod and plinth run out of the bottom of the frame. The National Costume's hero shot is about 1.5× larger.
+  - The headline column narrowed from 40% to 35% of the width.
+  - Key lights narrowed from 20° to 15° so they don't spill onto the closer neighbours, and each aims at its garment's own middle (it mattered once a costume was mounted).
+  - **Kept:** the costume beside a headline column in landscape. For a tall figure it gives the most height; text under the costume would shrink it.
+  - **Rejected:** text as a lower third over the costume (it covers the feet, and framing above it makes the costume smaller).
+- **Decision (2026-09-25):** the National Costume floats at its real height above the plinth, with no mount (Rakesh's call; see "Rejected AI suggestions"). Hero shots frame the garment, so the gap below it falls out of frame there.
+
+## Explore view (revision to steps 5–6, 2026-09-25)
+- **Decision (Rakesh's idea):** the story panel is a column at the inline end in **both** orientations, with the costume beside it.
+  - **Why:** a costume is tall and narrow. On an 11" iPad in portrait, the bottom sheet left the costume about 390 px tall; beside a column it keeps about 930 px (2.4×). The panel keeps about 400 px of width.
+  - **Rejected:** the portrait bottom sheet. It suits phones, and the brief is 10–13" screens.
+  - In a narrow panel (under 420 px wide, a container query) the chapter tabs stack, so no label wraps or clips. The medium shot uses a crop narrower than it is tall, to suit the column.
+- **Decision (Rakesh's idea):** the costume's title card (title plus one line of wearer/place context, the brief's museum label) sits centred above the costume while exploring. It arrives once the camera lands and leaves as soon as the camera moves (switching, a story, attract). The top band grew from 96 to 128 px for it, so the costume is about 5% smaller while exploring.
+  - **Why:** a visitor who walks up mid-visit has to know what they're looking at. Until now, only the story panel and the selector named the costume.
+- **Fix:** label fades now overwrite each other. A side-flip fade-in that was still running could win over the "hide" that starts a story, leaving a label over the panel.
+- **Open:** a "Now showing: …" caption on the attract screen (Rakesh to decide).
+
+## Transitions (step 9)
+- **Decision:** motion tokens. Every duration and ease comes from `src/motion.js`, the way layout sizes come from `tokens.css`. Camera moves use `power3.inOut` (slow to start, slow to land, like a dolly on rails). Panels arrive fast and settle (`…out`) and leave by accelerating away (`…in`). The attract loop's glide is slower and softer.
+  - **Why:** one place to tune how the whole piece moves, and consistent motion is part of "one shared system".
+- **Decision:** the story's connected transition. As the panel settles, a hairline in the costume's accent draws from the hotspot ring to the panel's title, and the close-up grows out of the ring into its place in the panel (a copy flies there, then hands over to the real image). The line follows the ring every frame, from the 3D projection rather than a layout read.
+  - **Why:** the brief asks for "a connected story transition", and that "a close-up should feel like leaning in". Growing from the exact spot makes the image the insert shot of that detail.
+  - **Rejected:** a crossfade or a plain slide-in, which reads as a page swap.
+- **Decision:** switching costume, the arriving costume keeps turning the way it was going and settles facing front as the camera lands (never more than one turn). The first view of every costume is its front.
+- **Decision:** first-reveal bloom. The first time a back hotspot turns into view during a visit, its ring swells and fades twice in the accent colour. Never again for that visitor; the idle reset clears it.
+  - **Why:** "reward curiosity". Turning the costume round is the behaviour the brief wants to encourage, so it gets a moment the first time it pays off.
+
 ## Performance
 - **Decision:** keep about 40 fps or better on Rakesh's older test iPad, and 60 fps on a current iPad.
   - **Measured:** 42 fps at step 1 with one stand-in box, pixel ratio 2 and antialiasing on. The costumes, environment light and spot keys will cost more, so the frame rate has to be managed, not just hoped for.
@@ -103,6 +144,11 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
   - **Why:** the iPad 5th gen has a 2× screen, so at 1.5 it draws about 56% of the pixels. Most of its frame time goes on filling pixels, not on geometry.
   - **Next:** a start-up quality check picks the pixel ratio once, while the first screen shows. That gives 2× on a strong iPad and less on a weak one.
   - **Measured (2026-09-25, stand-ins, iPad 5th gen):** pixel ratio 1 and 1.5 both hold 60 fps; 2 drops to 30 fps. This confirms the cost is filling pixels.
+  - **Measured (2026-09-25, after steps 4–7, real models, iPad 5th gen, pixel ratio 1.5):**
+    - 30 fps in a Safari session that had been through many dev reloads; **54 fps after quitting and reopening Safari.** Above the 40 fps floor.
+    - The 30 fps was most likely memory left over from earlier page loads (each reload makes a new WebGL context and the old ones aren't always freed at once), so it was the test session, not the app. A kiosk runs for days, though, so step 14 adds a **soak test**: leave it cycling for a few hours and check the frame rate holds, to rule out a real leak.
+    - Remaining costs, if we need headroom later: the armour's 450k triangles (normal-map bake → ~150k), antialiasing on a 1.5× canvas, and the three spot lights every pixel pays for. Step 13's start-up quality check stays planned, but it's no longer urgent.
+    - The kiosk will be a newer iPad; the iPad 5 stays the worst-case test.
 
 ## Model pipeline
 - **Decision (2026-09-25):** `npm run models` uses the gltf-transform library, not its command line, so each texture type gets its own size. Rakesh approved the dev-only packages.
@@ -130,8 +176,8 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
 - **2026-09-25: The National Costume: on stage as costume 1.** Rakesh downloaded it.
   - Arrived as a raw scan: arbitrary units, facing −Z, floating off-centre. The pipeline turns it 180°, scales it to an estimated 1.07 m (collar to knee bands) and lifts it 0.40 m, to knee height. *Height and lift are estimates for a ~1.70 m wearer; Rakesh to confirm by eye.*
   - 500k → 125k triangles; one 4K colour texture. 2.91 MB, ~89 MB GPU. Close-ups show the real embroidery, silver-gilt thread, fabric buttons and the weave of the silk.
-  - **Flaw:** a scan hole in the cape's white lining, on its inner right edge, visible from a front three-quarter angle. Options: fill it in Blender, or keep hotspots and push-ins away from that angle.
-  - **Open:** the garment ends at the knee, so it floats 40 cm above the plinth. Options: leave it floating (an invisible mannequin); add a slim museum mount rod from plinth to waist (recommended: it's how museums show a garment without legs, and it grounds the object); or set it on the plinth (wrong proportions next to the others).
+  - **Flaw, kept (2026-09-25, Rakesh's call):** a scan hole in the cape's white lining, on its inner right edge, visible from a front three-quarter angle and in the attract hero shot. Left as scanned.
+  - **Resolved:** the garment ends at the knee, so it floats 40 cm above the plinth. It stays floating, like an invisible mannequin (Rakesh rejected the mount rod).
 - **2026-09-25: The Parade Armour of King Erik XIV: on stage as costume 3.** Chosen by Rakesh with the National Costume. Replaces the King in slot 3.
   - A complete suit, helmet to sabatons, already in metres (1.67 m), feet at the bottom, front facing +X. The pipeline turns it −90°. No lift or mount needed. The back plate is decorated: the back-only hotspot.
   - **Geometry:** the relief (repoussé lions, scrollwork, rivets) lives in the mesh, not the texture. Simplifying to 150k turned it into faceted "foil"; 300k still lost it; **450k keeps most of it (4.53 MB, over the 3 MB budget).** Cloth survives heavy simplification because its detail is in the textures; embossed metal doesn't.
@@ -218,4 +264,10 @@ Arabic-specific type:
   - Switched to Three.js + GSAP.
 - **2026-09-24: Build the attract state straight after the camera step, instead of at step 7.** Claude proposed it because the brief calls the attract state the most important screen, and building it late risks rushing it.
   - **Why rejected:** Rakesh chose to get a complete, usable version on the iPad first and polish after. The foundations are built so polish can be added without rework, and the halfway rule in PLAN.md protects the polish time.
+- **2026-09-25: Name the exhibition "Backstories"** (hook: "Every costume hides a detail on its back"). Claude proposed it at the start and again for step 8, as a way to turn the brief's back-hotspot rule into the exhibition's idea.
+  - **Why rejected:** Rakesh chose a plainer, more direct title and a broader promise: **"Costume Explorer" / "Every costume has its story" / "Touch the costume to begin"**. The back-hotspot idea still shows on screen through the attract teaser (the back ring pulses as the back comes round); it just isn't the headline.
+- **2026-09-25: A museum mount rod under the National Costume.** Claude proposed and built a slim dark rod on a floor plate, rising inside the breeches, because the garment ends at the knee and floats 40 cm above its plinth, which read as levitating in the large attract hero shots.
+  - **Why rejected:** Rakesh removed it after seeing it on the iPad. The costume floats at its real height, like an invisible mannequin; the hero framing already keeps the gap out of the shot.
+- **2026-09-25: Fill the National Costume's cape scan hole in Blender** (Fill Holes), since the attract hero shot shows it clearly.
+  - **Why rejected:** Rakesh chose to leave the scan as it is.
 - *(Log more as they happen: the suggestion, why it was rejected, and the date.)*

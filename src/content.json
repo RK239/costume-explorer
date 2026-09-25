@@ -1,7 +1,7 @@
 {
   "exhibition": {
     "title": { "en": "Costume Explorer", "ar": "" },
-    "hook": { "en": "Each costume hides a detail on its back", "ar": "" }
+    "subtitle": { "en": "Every costume has its story", "ar": "" }
   },
   "ui": {
     "chapters": {
@@ -12,7 +12,7 @@
     "close": { "en": "Close", "ar": "" },
     "found": { "en": "{n} of {total} found", "ar": "" },
     "imagePending": { "en": "Image to come", "ar": "" },
-    "touchToBegin": { "en": "Touch a costume to begin", "ar": "" }
+    "touchToBegin": { "en": "Touch the costume to begin", "ar": "" }
   },
   "costumes": [
     {

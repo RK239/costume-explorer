@@ -3,19 +3,22 @@ import gsap from 'gsap';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { createStandIn } from './stand-in.js';
+import { MOTION } from '../motion.js';
 
-const SPACING = 3; // metres between costumes along X
+// Metres between costumes along X. Close enough that the attract wide shot shows them large,
+// far enough that a hero shot's neighbours only appear, dimmed, at the edges.
+const SPACING = 1.8;
 
 // Key light: front-high and a little off-axis, so it rakes across the fabric.
 // Intensities are in candela (three.js physical units), so they fall off with distance.
+// The cone is narrow enough not to spill onto the neighbours at this spacing.
 const KEY = {
-  offset: new THREE.Vector3(1.3, 3.4, 2.8), // from the costume's feet
+  offset: new THREE.Vector3(1.1, 3.4, 2.8), // from the costume's feet
   on: 55,
   off: 0.5,          // never 0 and never visible = false: changing the light count recompiles every shader
-  angle: THREE.MathUtils.degToRad(20),
-  penumbra: 0.6,
-};
-const ENV_ON = 1;
+  angle: THREE.MathUtils.degToRad(15),
+  penumbra: 0.7,
+};const ENV_ON = 1;
 const ENV_OFF = 0.08;
 
 const PLINTH_HEIGHT = 0.04;
@@ -64,13 +67,13 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
     // The plinth is sized from what touches the floor (a gown's hem, not a dress's outstretched sleeves).
     const base = floorRadius(model, box);
     const plinthRadius = base + PLINTH_BORDER;
-    // How far the costume and its plinth reach from the turntable axis at any angle.
-    // The camera frames this, so the costume fits however it's turned.
-    const radius = Math.max(
-      plinthRadius + 0.02,
+    // How far the garment reaches from the turntable axis at any angle (its box's farthest
+    // corner), and with its plinth. The camera frames these, so it fits however it's turned.
+    const garmentRadius = Math.max(
       Math.hypot(box.min.x, box.min.z), Math.hypot(box.min.x, box.max.z),
       Math.hypot(box.max.x, box.min.z), Math.hypot(box.max.x, box.max.z),
     );
+    const radius = Math.max(plinthRadius + 0.02, garmentRadius);
 
     // The turntable is the pivot visitors turn: like an empty parent GameObject in Unity.
     const turntable = new THREE.Group();
@@ -109,7 +112,7 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
 
     const key = new THREE.SpotLight(0xffffff, KEY.on, 0, KEY.angle, KEY.penumbra, 2);
     key.position.set(x, 0, 0).add(KEY.offset);
-    key.target.position.set(x, size.y * 0.55, 0);
+    key.target.position.set(x, box.min.y + size.y * 0.55, 0); // the garment's own middle, even when it floats
     scene.add(key, key.target);
 
     // Every material on the costume, collected once so light-up / go-dark can tween them together.
@@ -119,25 +122,24 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
     });
 
     return {
-      id: data.id, data, index, turntable, model, key, materials, size, box, radius,
+      id: data.id, data, index, turntable, model, key, materials, size, box, radius, garmentRadius,
       bottom: -PLINTH_HEIGHT,  // the framed height runs from the plinth's underside…
       top: box.max.y,          // …to the top of the costume
     };
   });
 }
 
-// Each returns a GSAP timeline, so the director can place it inside a bigger move.
-export function lightUp(rig, duration = 1.2) {
+// Light a costume to `level` (0 = dark, 1 = fully lit): its key light and its share of the
+// environment fill move together. Returns a GSAP timeline, so the director can place it inside
+// a bigger move.
+export function lightTo(rig, level, duration = MOTION.light.duration, ease = MOTION.light.ease) {
   return gsap.timeline()
-    .to(rig.key, { intensity: KEY.on, duration, ease: 'power2.inOut' }, 0)
-    .to(rig.materials, { envMapIntensity: ENV_ON, duration, ease: 'power2.inOut' }, 0);
+    .to(rig.key, { intensity: KEY.off + (KEY.on - KEY.off) * level, duration, ease }, 0)
+    .to(rig.materials, { envMapIntensity: ENV_OFF + (ENV_ON - ENV_OFF) * level, duration, ease }, 0);
 }
 
-export function goDark(rig, duration = 1.2) {
-  return gsap.timeline()
-    .to(rig.key, { intensity: KEY.off, duration, ease: 'power2.inOut' }, 0)
-    .to(rig.materials, { envMapIntensity: ENV_OFF, duration, ease: 'power2.inOut' }, 0);
-}
+export const lightUp = (rig, duration) => lightTo(rig, 1, duration);
+export const goDark = (rig, duration) => lightTo(rig, 0, duration);
 
 // The costume's radius at floor level: the farthest vertex from the axis in its lowest 10 cm.
 function floorRadius(model, box) {
