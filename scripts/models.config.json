@@ -21,16 +21,18 @@
       "height": 1.07,
       "lift": 0.4
     },
-    "simplifyRatio": 0.25,
+    "simplifyRatio": 0.23,
     "simplifyError": 0.005,
     "textureSize": {
       "baseColorTexture": 4096
     },
     "_place": "The scan arrives in arbitrary units, facing -Z and floating off-centre. Height and lift are estimates for an adult wearer of about 1.70 m: collar near 1.47 m, the breeches' knee bands and the cape hem near 0.40 m. Adjust by eye.",
     "_textureSize": "A scan has one colour texture and no normal or roughness maps, so it can afford 4K and still sit inside the GPU budget.",
-    "changes": "Turned 180\u00b0 to face the front, scaled to an estimated real height and centred on the turntable. Stray atlas UVs clamped to 0\u20131. Simplified from 500k to ~125k triangles (meshoptimizer). The 4K colour texture converted to WebP. Geometry compressed with meshopt. This optimised model is shared under CC BY-SA 4.0, as the original licence requires.",
+    "changes": "A hole in the cape's white lining patched with a new piece of lining in Blender (scripts/blender/patch-national-lining.py): a thin surface fitted over the hole, its stripes continued from the lining around it in a small texture of its own. Turned 180\u00b0 to face the front, scaled to an estimated real height and centred on the turntable. Stray atlas UVs clamped to 0\u20131. Simplified from 500k to ~117k triangles (meshoptimizer). The 4K colour texture converted to WebP. Geometry compressed with meshopt. This optimised model is shared under CC BY-SA 4.0, as the original licence requires.",
     "clampUVs": true,
-    "_clampUVs": "47 of 134,629 atlas UVs strayed up to 0.4% outside 0\u20131, which kept all UVs as 32-bit floats."
+    "_clampUVs": "47 of 134,629 atlas UVs strayed up to 0.4% outside 0\u20131, which kept all UVs as 32-bit floats.",
+    "_source": "models-src/National Costume.glb is the patched scan, written by the Blender script from the original in models-src/originals/.",
+    "_simplify": "0.23 (was 0.25): Blender's re-export and the patch added ~0.15 MB, and 0.23 brings the file back under the 3 MB budget (2.98 MB, 117k triangles) with no visible loss in the push-ins."
   },
   "Parade Armour.glb": {
     "place": {
@@ -42,9 +44,9 @@
       "baseColorTexture": 4096
     },
     "_place": "A full suit, helmet to sabatons, already in metres (1.67 m) with its feet at the bottom. Its front faces +X, so it is turned -90\u00b0. No lift: it stands on the plinth.",
-    "_texture": "Currently the 1K download (Sketchfab's '-1k' option), which is too soft for a full-body scan. Re-download at 4K and the same setting uses it.",
+    "_texture": "The 4K download (a 4096 PNG), converted to WebP. In a push-in the etched scrollwork and the figures in the breastplate's medallions are crisp at 4K and soft at 1K. It costs ~2 MB of file and fits the GPU budget (~89 MB).",
     "changes": "Turned -90\u00b0 to face the front and centred on the turntable. Simplified from 1M to ~450k triangles (meshoptimizer). Colour texture converted to WebP. Geometry compressed with meshopt.",
-    "_simplify": "Steel scans carry their relief (repouss\u00e9 lions, scrollwork, rivets) in the geometry, not the texture. At 150k triangles the relief collapsed into faceted 'foil'; 300k still lost it; 450k keeps most of it. Over the file budget (4.5 MB) until a normal map is baked from the 1M original onto a ~150k mesh."
+    "_simplify": "Steel scans carry their relief (repouss\u00e9 lions, scrollwork, rivets) in the geometry, not the texture. At 150k triangles the relief collapsed into faceted 'foil'; 300k still lost it; 450k keeps most of it. The geometry is ~4.3 MB of the 6.55 MB file (1K texture: 4.53 MB, 2K: 5.02 MB, 4K: 6.55 MB), so only a normal map baked from the 1M original onto a ~150k mesh brings it near the 3 MB budget."
   },
   "Calligraphy Dress.glb": {
     "place": {

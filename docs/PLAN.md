@@ -194,6 +194,9 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 - [x] Switching: every arrival turns the same gentle 60° onto the costume's front and goes straight into its slow turn (was 0.97–5.51 rad, then a 3 s dead stop); a drag started mid-move takes over when the move lands.
 - [x] Switching is a light cross-fade: the costume the camera leaves fades out, the next comes up out of the dark as the camera lands; nothing pops in or out (fixed "going dark" never dimming the room fill).
 - [x] Less light behind the costumes: the haze sits above them, narrower and fainter, so the space right behind each garment stays dark.
+- [x] Parade Armour at 4K (sharper etching in push-ins). 6.55 MB, over the 3 MB file budget until the normal bake.
+- [x] National Costume: the hole in the cape's lining patched in Blender with a new piece of lining (`scripts/blender/patch-national-lining.py`); still under 3 MB (2.98).
+- [ ] Rakesh: bake a normal map for the armour (1M original → ~150k mesh) to bring its file down from 6.55 MB (DECISIONS: Models and licences).
 - [ ] Rakesh: re-pose the dress's forearms in Blender (see DECISIONS: Third costume). Then `npm run models`, and Claude places the cuff hotspot again.
 - [ ] Rakesh: check all of it on the iPad (look, and fps against the ~54 before; three real models now load).
 - [ ] More changes from Rakesh.

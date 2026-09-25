@@ -144,6 +144,7 @@ scripts/
   optimise-models.js npm run models (gltf-transform library)
   models.config.json texture sizes per slot, per-model settings, record of changes (CC BY)
   sample-accents.js  npm run accents: accent colours sampled from each garment's textures
+  blender/patch-national-lining.py  headless Blender: patches the hole in the National Costume's lining
 ```
 
 ## Dev tools (`?dev=1`)
