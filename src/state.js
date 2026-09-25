@@ -6,12 +6,14 @@ const params = new URLSearchParams(location.search);
 //   ?dpr=1    overrides the pixel ratio, to measure what sharpness costs on a device
 //   ?focus=2  skip the attract state and open costume 2 (0, 1 or 2)
 //   ?skip=parade-armour,national-costume  load stand-ins instead, to find a model a device can't handle
+//   ?tone=agx  compare AgX tone mapping with the default, Neutral
 export const flags = {
   dev: params.get('dev') === '1',
   idleSeconds: Number(params.get('idle')) || 45,
   dpr: Number(params.get('dpr')) || null,
   focus: params.has('focus') ? Number(params.get('focus')) || 0 : null,
   skip: (params.get('skip') ?? '').split(',').filter(Boolean),
+  tone: params.get('tone') === 'agx' ? 'agx' : 'neutral',
 };
 
 export const state = {

@@ -28,15 +28,19 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
   const panel = document.createElement('aside');
   panel.className = 'story';
   panel.innerHTML = `
-    <button type="button" class="story__close"><span aria-hidden="true">×</span></button>
-    <p class="story__costume"></p>
-    <h2 class="story__title"></h2>
-    <div class="story__tabs" role="tablist"></div>
-    <p class="story__text" role="tabpanel"></p>
     <figure class="story__figure">
-      <img class="story__image" alt="" draggable="false" />
-      <figcaption class="story__pending"></figcaption>
-    </figure>`;
+      <div class="story__frame">
+        <img class="story__image" alt="" draggable="false" />
+        <figcaption class="story__pending"></figcaption>
+      </div>
+    </figure>
+    <button type="button" class="story__close"><span aria-hidden="true">×</span></button>
+    <div class="story__body">
+      <p class="story__costume"></p>
+      <h2 class="story__title"></h2>
+      <div class="story__tabs" role="tablist"></div>
+      <p class="story__text" role="tabpanel"></p>
+    </div>`;
   overlay.append(panel);
   gsap.set(panel, { autoAlpha: 0 });
 
@@ -50,6 +54,8 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
   const closeButton = $('.story__close');
   const title = $('.story__title');
   const figure = $('.story__figure');
+  const frame = $('.story__frame');
+  let lean = null; // the close-up's slow push-in
   const tabs = CHAPTERS.map((chapter, i) => {
     const tab = document.createElement('button');
     tab.type = 'button';
@@ -111,24 +117,46 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
   }
 
   // The close-up growing out of the ring: a copy of the image (or the placeholder) starts as the
-  // ring itself and grows into the figure's place in the panel, then hands over to the real one.
+  // ring itself and grows into the image frame's place in the panel (tilted like the sheet, for
+  // a sketch), then hands over to the real one.
   function grow(rig, hotspot) {
     const ready = image.complete && image.naturalWidth > 0 && hotspot.image?.src;
+    const sketch = hotspot.image?.kind === 'sketch';
     flyer.style.backgroundImage = ready ? `url("${image.currentSrc || image.src}")` : '';
     flyer.classList.toggle('is-pending', !ready);
+    flyer.classList.toggle('is-sketch', sketch);
+    const tilt = sketch ? parseFloat(getComputedStyle(panel).getPropertyValue('--sketch-tilt')) || 0 : 0;
     const ring = () => hotspots.project(rig, hotspot);
-    const target = () => figure.getBoundingClientRect(); // read when the growth starts: panel in place
+    // The frame's layout box, ignoring its tilt: read when the growth starts, with the panel in place.
+    const target = () => ({
+      left: panel.offsetLeft + figure.offsetLeft + frame.offsetLeft,
+      top: panel.offsetTop + figure.offsetTop + frame.offsetTop,
+      width: frame.offsetWidth,
+      height: frame.offsetHeight,
+    });
     return gsap.timeline()
       .fromTo(flyer, {
         left: () => ring().x - RING_RADIUS, top: () => ring().y - RING_RADIUS,
-        width: RING_RADIUS * 2, height: RING_RADIUS * 2, borderRadius: RING_RADIUS, autoAlpha: 1,
+        width: RING_RADIUS * 2, height: RING_RADIUS * 2, borderRadius: RING_RADIUS, rotation: 0, autoAlpha: 1,
       }, {
         left: () => target().left, top: () => target().top,
-        width: () => target().width, height: () => target().height, borderRadius: 8,
+        width: () => target().width, height: () => target().height,
+        borderRadius: sketch ? 1 : 0, rotation: tilt,
         ...MOTION.grow,
       })
       .set(figure, { autoAlpha: 1 })
+      .call(() => startLean(hotspot))
       .to(flyer, { autoAlpha: 0, duration: 0.2 });
+  }
+
+  // "A close-up should feel like leaning in": once it lands, it keeps pushing in, very slowly,
+  // continuing the camera's move.
+  function startLean(hotspot) {
+    lean?.kill();
+    gsap.set(image, { scale: 1 });
+    if (hotspot.image?.kind === 'closeup') {
+      lean = gsap.to(image, { scale: 1.08, duration: 14, ease: 'none' });
+    }
   }
 
   function open(rig, hotspot) {
@@ -163,6 +191,7 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
       },
     });
     gsap.killTweensOf(flyer);
+    lean?.kill();
     timeline.set(flyer, { autoAlpha: 0 }, 0);
     timeline.to(path, { strokeDashoffset: 1, ...MOTION.retract }, 0);
     timeline.to(panel, { ...offscreen(), autoAlpha: 0, ...MOTION.panelOut }, 0.1);

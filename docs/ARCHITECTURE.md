@@ -13,7 +13,8 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
   - a costume goes dark by tweening its key light intensity and its materials' `envMapIntensity` to near zero. Collect each costume's materials at load.
   - never toggle a light's `visible`. Three.js recompiles every material when the number of lights changes, which stalls the iPad. Only change intensity.
 - Background: a near-black stage colour.
-- Tone mapping: AgX or Neutral. Rakesh picks by eye and logs the choice. Output is sRGB.
+- Stage light without lights: an unlit, additive gradient glow on a backdrop behind each costume and a pool on the floor around each plinth, faded with the costume's light level.
+- Tone mapping: Neutral by default (`?tone=agx` to compare); Rakesh confirms by eye. Output is sRGB.
 - Camera: a PerspectiveCamera with a vertical FOV around 30° (roughly a 45 mm full-frame vertical equivalent). Rakesh has the final say on the lens.
 
 ## Interaction model: turntable, not orbit
@@ -115,6 +116,7 @@ src/
     scene.js         renderer, camera, environment, lights, plinths, shadows
     costumes.js      loading, turntable groups, light up / go dark
     stand-in.js      dress-form stand-ins while a costume has no model yet
+    thumbnails.js    selector thumbnails rendered from the costumes at load (also uploads textures)
     turntable.js     drag, inertia, auto-rotate, fast-spin detection
     director.js      framing, lens shift, push-in, mode timelines
   motion.js          motion tokens: every duration and ease
@@ -137,6 +139,7 @@ models-src/          raw GLBs from Blender (not deployed)
 scripts/
   optimise-models.js npm run models (gltf-transform library)
   models.config.json texture sizes per slot, per-model settings, record of changes (CC BY)
+  sample-accents.js  npm run accents: accent colours sampled from each garment's textures
 ```
 
 ## Dev tools (`?dev=1`)

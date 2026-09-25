@@ -1,42 +1,56 @@
-/* Design tokens. Phase 2 restyles the app by changing these values, not the components. */
+/* Design tokens. The whole look is set here; components only refer to these names.
+   Hierarchy comes from size, weight and colour, never from capitals or letter-spacing:
+   Arabic has neither, so the same system carries over to RTL unchanged (step 11). */
 :root {
   /* Colour */
   --stage: #0b0b0c;                     /* near-black stage; the WebGL background reads this too */
   --ink: #f2efe9;                       /* warm off-white text */
-  --ink-muted: rgb(242 239 233 / 0.62);
-  --accent: #b8452e;                    /* tweened to each costume's colour */
+  --ink-muted: rgb(242 239 233 / 0.66);
+  --ink-faint: rgb(242 239 233 / 0.38);
+  --accent: #ad675d;                    /* sampled from each garment (npm run accents), tweened on switch */
+  --plate: #141416;                     /* solid backing for labels and panels */
+  --plate-raised: #1c1c20;
+  --line: rgb(242 239 233 / 0.14);      /* hairlines and outlines */
+  --paper: #ede5d5;                     /* the sketch treatment's paper */
+  --paper-ink: #3a342d;
 
-  /* Type */
-  --font-sans: system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --text-display: clamp(40px, 6vmin, 72px);
-  --text-body: 22px;
-  --text-label: 32px;                   /* hotspot labels; 36–40 px to be tested at 1.5 m */
+  /* Type: IBM Plex Sans, with IBM Plex Sans Arabic from the same family for RTL. */
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 600;
 
-  /* Space and touch */
-  --edge: 40px;                         /* distance from the screen edge */
-  --hit: 56px;                          /* smallest touch target; the brief's floor is 44 px */
-
-  /* Attract state: read from 2–3 m. On an 11" iPad, 1 CSS px ≈ 0.19 mm, so a 100 px title
-     has capitals about 13 mm tall. */
-  --attract-inline: min(35vw, 480px);
-  --text-attract-title: clamp(56px, 8.5vmin, 108px);
+  /* Type scale. Sizes are set for reading distance: 1 CSS px ≈ 0.19 mm on these iPads. */
+  --text-attract-title: clamp(56px, 8.5vmin, 108px);    /* 2–3 m: capitals up to ~13 mm */
   --text-attract-subtitle: clamp(22px, 3.2vmin, 34px);
   --text-attract-invite: clamp(20px, 2.8vmin, 30px);
+  --text-costume-title: clamp(30px, 4.4vmin, 46px);     /* 1.5 m */
+  --text-costume-context: clamp(16px, 2.1vmin, 21px);
+  --text-label: 34px;                                    /* hotspot labels, 1.5 m (see DECISIONS: Legibility) */
+  --text-panel-title: 32px;
+  --text-body: 21px;
+  --text-small: 15px;
+  --leading-tight: 1.05;
+  --leading-body: 1.5;
 
-  /* Surfaces */
-  --plate: #151517;                     /* solid backing for labels and panels */
-  --line: rgb(242 239 233 / 0.18);      /* hairlines and outlines */
+  /* Space, shape and touch */
+  --edge: 40px;                         /* distance from the screen edge */
+  --hit: 56px;                          /* smallest touch target; the brief's floor is 44 px */
+  --radius: 14px;
+  --radius-small: 8px;
+  --shadow: 0 24px 64px rgb(0 0 0 / 0.55);
+
+  /* Attract state */
+  --attract-inline: min(35vw, 480px);
 
   /* Hotspots */
   --hotspot-hit: 60px;                  /* touch target (brief: at least 44 px) */
   --hotspot-ring: 26px;                 /* hollow ring, so the detail shows through it */
+  --leader: 21px;                       /* hairline from the ring's edge to its label */
 
   /* Story panel: a column at the inline end in both orientations, beside the costume. */
   --panel-inline: min(40vw, 480px);
-
-  /* Costume title card (explore), read from about 1.5 m. */
-  --text-costume-title: clamp(30px, 4.4vmin, 46px);
-  --text-costume-context: clamp(16px, 2.1vmin, 21px);
+  --sketch-tilt: -2.2deg;               /* the sketch sits on the desk at a slight angle (RTL mirrors it) */
 
   /* Camera framing. The director keeps the costume inside the screen minus these bands,
      which are reserved for UI: the costume's title card at the top, the selector at the bottom. */
@@ -50,5 +64,14 @@
     /* A portrait screen is narrower, so the panel takes a larger share to keep lines readable;
        the costume keeps the full height beside it. */
     --panel-inline: min(50vw, 460px);
+  }
+}
+
+@media (max-height: 800px) {
+  :root {
+    /* Short screens (a 10.2" iPad in landscape is 768 px tall): tighter bands, so the story
+       panel keeps room for its text. */
+    --frame-top: 116px;
+    --frame-bottom: 124px;
   }
 }

@@ -135,6 +135,27 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
 - **Decision:** first-reveal bloom. The first time a back hotspot turns into view during a visit, its ring swells and fades twice in the accent colour. Never again for that visitor; the idle reset clears it.
   - **Why:** "reward curiosity". Turning the costume round is the behaviour the brief wants to encourage, so it gets a moment the first time it pays off.
 
+## Visual system (step 10)
+- **Decision:** IBM Plex Sans (400, 500, 600), with IBM Plex Sans Arabic from the same family in step 11. One type scale in `tokens.css`, set for reading distance (1 CSS px ≈ 0.19 mm on these iPads).
+  - **Hierarchy by size, weight and colour only; never capitals or letter-spacing.** Arabic has neither, so the same hierarchy carries over to RTL unchanged. (The story eyebrow was uppercase and tracked in Phase 1; now it's a small semibold line in the accent.)
+  - **Rejected:** a separate display face. It would need its own Arabic partner, which breaks "one shared system".
+- **Decision:** accent colours sampled from the garments, not picked. `npm run accents` reads each model's colour textures, groups the coloured pixels into hue families, averages each, and lightens it (same hue) until it reads at WCAG 4.5:1 on the stage. The accent is used for small text and thin lines.
+  - National Costume: **#AD675D**, the rose of its silk embroidery (hue ~5°). Not the silk ground (~25°, 97% of the texture), which reads as tan on screen.
+  - Parade Armour: **#8A7963**, its gilding (hue ~35°). Not the leather straps (~15°), which would be nearly the same brown as the National Costume. The gilding reads faint in the current 1K texture; re-run after the 4K download.
+- **Decision:** hotspot style. A hollow ring (2.5 px, off-white, with a dark outline so it reads on light silk and on polished steel), a 21 px leader line, and the label on a solid plate. A seen ring fills with the costume's accent.
+- **Decision:** story panel. The image sits on top as the insert shot, then a small accent eyebrow (the costume), the title, the chapters as text tabs with an accent marker (stacked in a narrow panel), then the text.
+  - The image has a guaranteed share: 40% of the panel, up to 340 px, and it yields, down to 120 px, only when a long chapter needs the room. Text is never cut and never scrolls.
+  - **Measured**, for every hotspot's every chapter at 10.2" (1024 × 768 / 768 × 1024), 11" and 13" in both orientations: all fit. The tightest case (the iPad 5 in landscape, a 5-line chapter) shrinks the image from 210 to 182 px.
+  - On short screens (under 800 px tall) the UI bands tighten (title card 116 px, selector 124 px) to give the panel room.
+- **Decision:** image treatments. A close-up is full-bleed with a vignette and keeps pushing in, very slowly, after it lands (1.00 → 1.08 over 14 s), continuing the camera's move ("feel like leaning in"). A sketch is a sheet of paper taped to the desk at −2.2° (RTL mirrors it), with a soft shadow, the drawing multiplied into the paper rather than laid on top ("a designer's desk, not a plain gallery"). The close-up's flight from the ring lands on the sheet at the same tilt.
+- **Decision:** selector thumbnails rendered from the costumes at load (a three-quarter view, lit, cropped to 3:4), not image files. They can't drift out of step with the models. Rendering each costume once at load also uploads its textures to the GPU, which was a planned step 13 item (the first switch never stalls).
+- **Decision:** when every hotspot on the current costume is found, the next unfinished costume's button pulses gently in its own accent. "Make visitors want to return for the other costumes."
+- **Decision:** stage light without extra lights. A warm glow on a backdrop behind each costume separates dark silk and steel from the black (a rim light's job), and a pool of light on the floor around each plinth grounds it. Both are unlit gradients, added on top, and they follow the costume's light level (dark costumes lose their glow).
+  - **Rejected:** a rim spot light per costume. Every pixel would pay for three more lights; the iPad 5 is the worst case.
+- **Decision (Rakesh to confirm by eye):** tone mapping **Neutral** (Khronos PBR Neutral) instead of AgX. Neutral keeps base colours close to the scan and only compresses the brightest highlights. AgX desaturated the rose silk. `?tone=agx` switches for comparison.
+- **Open:** hotspot labels are 34 px semibold on a solid plate. Rakesh to test at 1.5 m with a tape measure.
+- **Open (copy):** several chapters run 4–5 lines at iPad widths; the brief says "about 2 lines each". Trim in the copy pass, which also gives the image back its full share.
+
 ## Performance
 - **Decision:** keep about 40 fps or better on Rakesh's older test iPad, and 60 fps on a current iPad.
   - **Measured:** 42 fps at step 1 with one stand-in box, pixel ratio 2 and antialiasing on. The costumes, environment light and spot keys will cost more, so the frame rate has to be managed, not just hoped for.

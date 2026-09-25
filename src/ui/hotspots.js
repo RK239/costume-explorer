@@ -12,7 +12,7 @@ const FACING_START = 0.05; // dot(normal, toCamera) where a marker starts to app
 const FACING_END = 0.3;    // …and where it's fully visible
 const TAPPABLE = 0.5;      // below this opacity a marker can't be tapped
 const EDGE = 24;           // px a label keeps from the screen edge
-const LABEL_GAP = 10;      // px between ring and label (matches ui.css)
+const LABEL_GAP = 4;       // px beyond the touch target where the label starts (matches ui.css)
 const SIDE_DEAD_ZONE = 12; // px either side of the costume's centre line before a label changes side
 
 export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOpen }) {

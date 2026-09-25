@@ -169,15 +169,19 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 **Commit** (steps 8–9)
 
 ## 10. Visual system (~1 h)
-- [ ] Type scale. Test hotspot labels at 1.5 m with a tape measure (36–40 px semibold is the candidate) and log the result.
-- [ ] Accent colours taken from each garment, with a contrast check on the dark stage.
-- [ ] Final hotspot style: hollow ring with the label on a short leader line.
-- [ ] Panel design.
-- [ ] Selector thumbnails captured from the models.
-- [ ] Image treatments:
-  - `closeup`: feels like leaning in
-  - `sketch`: on paper, tilted 2–3°, with a soft shadow
-- [ ] When every hotspot on a costume is found, the next costume's thumbnail pulses gently.
+- [x] Type: IBM Plex Sans (400/500/600) and one type scale in `tokens.css`. Hierarchy by size, weight and colour only (no capitals or letter-spacing), so it carries over to Arabic.
+- [ ] Rakesh: test hotspot labels (now 34 px semibold on a solid plate) at 1.5 m with a tape measure and log the result.
+- [x] Accent colours sampled from each garment's texture (`npm run accents`), lightened to 4.5:1 on the stage: National Costume #AD675D (embroidery rose), Parade Armour #8A7963 (gilding). Re-run after the armour's 4K texture.
+- [x] Final hotspot style: hollow ring with a dark outline, a leader line, the label on a solid plate; the seen ring fills with the accent.
+- [x] Panel design: image on top as the insert shot (40% of the panel, yielding down to 120 px only for long text), accent eyebrow, title, chapter tabs with an accent marker, text. Measured: every hotspot's longest chapter fits at 10.2", 11" and 13" in both orientations, no scrolling.
+- [x] Selector thumbnails rendered from the costumes at load (which also uploads every texture before any switch).
+- [x] Image treatments:
+  - `closeup`: full-bleed with a vignette; keeps pushing in slowly once it lands (leaning in)
+  - `sketch`: a taped sheet of paper, tilted −2.2°, with a soft shadow, the drawing multiplied into the paper
+- [x] When every hotspot on a costume is found, the next unfinished costume's button pulses gently in its accent.
+- [x] Stage light: a backdrop glow behind each costume and a pool of light around each plinth, both unlit gradients that follow the costume's light level.
+- [x] Tone mapping: Neutral by default (`?tone=agx` to compare). Rakesh to confirm by eye.
+- [ ] Copy: several chapters run 4–5 lines; the brief says "about 2 lines each". Trim in Rakesh's copy pass.
 
 ## 11. Arabic and RTL (~1 h)
 - [ ] Language toggle: one tap, always reachable. It sets `dir="rtl"` and `lang`.
@@ -190,7 +194,7 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 - [ ] A visible progress ring. A touch pauses the tour; a tap on the ring resumes it.
 - [ ] The idle timer stays paused while the tour plays.
 
-**Commit** (steps 10–12)
+**Commit** (step 10 on its own, as a checkpoint before Rakesh's changes; then steps 11–12)
 
 ---
 

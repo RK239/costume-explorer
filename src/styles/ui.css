@@ -1,5 +1,7 @@
-/* Plain Phase 1 styles. Logical properties throughout, so RTL is a switch later; the two
-   deliberate physical exceptions are marked. No :hover anywhere (touch only). */
+/* Component styles. Every value comes from tokens.css. Logical properties throughout, so RTL
+   is a switch; the deliberate physical exceptions (things placed from the 3D projection) are
+   marked. No :hover anywhere (touch only). Hierarchy uses size, weight and colour, never
+   capitals or letter-spacing, so it carries over to Arabic unchanged. */
 
 button {
   font: inherit;
@@ -41,14 +43,15 @@ button {
 .attract__title {
   margin: 0;
   font-size: var(--text-attract-title);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   line-height: 0.95;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em; /* optical tightening at display size, not a hierarchy device */
 }
 
 .attract__subtitle {
-  margin: 0.5em 0 0;
+  margin: 0.55em 0 0;
   font-size: var(--text-attract-subtitle);
+  font-weight: var(--weight-regular);
   line-height: 1.25;
   color: var(--ink-muted);
 }
@@ -57,9 +60,9 @@ button {
   display: flex;
   align-items: center;
   gap: 18px;
-  margin: 2em 0 0;
+  margin: 2.2em 0 0;
   font-size: var(--text-attract-invite);
-  font-weight: 600;
+  font-weight: var(--weight-medium);
 }
 
 /* Same hollow ring as a hotspot: the invitation speaks the hotspots' visual language. */
@@ -92,8 +95,8 @@ button {
 }
 
 .teaser__ring {
-  border: 3px solid var(--ink);
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6), inset 0 0 0 1px rgb(0 0 0 / 0.6);
+  border: 2.5px solid var(--ink);
+  box-shadow: 0 0 0 1.5px rgb(0 0 0 / 0.5), inset 0 0 0 1.5px rgb(0 0 0 / 0.5);
 }
 
 .teaser__pulse {
@@ -102,7 +105,7 @@ button {
 
 /* ── Costume title card (explore) ─────────────────────────────────── */
 
-/* Centred in the top band the camera keeps free, above the costume. */
+/* Centred in the top band the camera keeps free, above the costume: a museum label. */
 .costume-label {
   position: absolute;
   inset-block-start: 22px;
@@ -115,7 +118,7 @@ button {
   display: block;
   inline-size: 48px;
   block-size: 4px;
-  margin: 0 auto 10px;
+  margin: 0 auto 12px;
   background: var(--accent);
   border-radius: 2px;
 }
@@ -123,12 +126,13 @@ button {
 .costume-label__title {
   margin: 0;
   font-size: var(--text-costume-title);
-  font-weight: 700;
-  line-height: 1.05;
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
 }
 
 .costume-label__context {
-  margin: 0.35em 0 0;
+  margin: 0.4em 0 0;
   font-size: var(--text-costume-context);
   color: var(--ink-muted);
 }
@@ -142,7 +146,7 @@ button {
 }
 
 /* Positioned by hotspots.js with translate3d from the 3D projection, which is in physical
-   screen pixels: the one place that uses physical left/top on purpose. */
+   screen pixels: physical left/top on purpose. */
 .hotspot {
   position: absolute;
   left: 0;
@@ -157,12 +161,22 @@ button {
   will-change: transform, opacity;
 }
 
+/* A hollow ring, so the detail it marks stays visible through it. The dark outline keeps it
+   readable on light silk and on polished steel alike. */
 .hotspot__ring {
   position: absolute;
   inset: calc((var(--hotspot-hit) - var(--hotspot-ring)) / 2);
-  border: 3px solid var(--ink);
+  border: 2.5px solid var(--ink);
   border-radius: 50%;
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6), inset 0 0 0 1px rgb(0 0 0 / 0.6);
+  box-shadow:
+    0 0 0 1.5px rgb(0 0 0 / 0.5),
+    inset 0 0 0 1.5px rgb(0 0 0 / 0.5),
+    0 2px 12px rgb(0 0 0 / 0.35);
+}
+
+/* Seen: the ring fills with the costume's accent once its story has been opened. */
+.hotspot.is-seen .hotspot__ring {
+  background: var(--accent);
 }
 
 /* First reveal: a back hotspot's ring swells and fades the first time it turns into view. */
@@ -175,32 +189,44 @@ button {
   pointer-events: none;
 }
 
-/* Seen state: the ring fills once its story has been opened. */
-.hotspot.is-seen .hotspot__ring {
-  background: var(--ink);
-}
-
+/* The label on a solid plate, joined to the ring by a short leader line. */
 .hotspot__label {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  padding: 6px 14px;
+  padding: 8px 16px;
   white-space: nowrap;
   font-size: var(--text-label);
-  font-weight: 600;
-  line-height: 1.2;
+  font-weight: var(--weight-bold);
+  line-height: 1.15;
   color: var(--ink);
   background: var(--plate);
-  border-radius: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.4);
+}
+
+.hotspot__label::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  inline-size: var(--leader);
+  block-size: 2px;
+  margin-block-start: -1px;
+  background: var(--ink);
 }
 
 /* Label side follows the garment, not the language (DECISIONS.md), so it's physical on purpose.
-   The 10 px gap matches LABEL_GAP in hotspots.js. */
-.hotspot.is-left .hotspot__label { right: calc(100% + 10px); }
-.hotspot.is-right .hotspot__label { left: calc(100% + 10px); }
+   The 4 px offset matches LABEL_GAP in hotspots.js; with the ring's inset it makes the leader. */
+.hotspot.is-left .hotspot__label { right: calc(100% + 4px); }
+.hotspot.is-left .hotspot__label::before { left: 100%; }
+.hotspot.is-right .hotspot__label { left: calc(100% + 4px); }
+.hotspot.is-right .hotspot__label::before { right: 100%; }
 
 /* ── Story panel ──────────────────────────────────────────────────── */
 
+/* A column at the inline end: the image on top with a guaranteed share of the height (it's
+   the insert shot, so text never squeezes it), then the costume, the detail, the chapters. */
 .story {
   position: absolute;
   inset-block: var(--frame-top) var(--frame-bottom);
@@ -208,109 +234,200 @@ button {
   inline-size: var(--panel-inline);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 28px;
   background: var(--plate);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   pointer-events: auto;              /* taps on the panel never reach the stage */
   overflow: hidden;
-  container-type: inline-size;       /* the tabs adapt to the panel's own width */
+  container-type: inline-size;       /* the chapters adapt to the panel's own width */
 }
 
-.story__close {
-  position: absolute;
-  inset-block-start: 8px;
-  inset-inline-end: 8px;
-  inline-size: var(--hit);
-  block-size: var(--hit);
-  padding: 0;
-  font-size: 34px;
-  line-height: 1;
-  background: none;
-  border: 0;
-}
-
-.story__costume {
-  margin: 0;
-  font-size: 16px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.story__title {
-  margin: 0;
-  padding-inline-end: var(--hit);
-  font-size: 34px;
-  font-weight: 600;
-  line-height: 1.1;
-}
-
-.story__tabs {
-  display: flex;
-  gap: 8px;
-}
-
-.story__tab {
-  flex: 1;
-  min-block-size: var(--hit);
-  padding: 8px 10px;
-  font-size: 17px;
-  line-height: 1.2;
-  background: none;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-}
-
-/* A narrow panel (portrait) stacks the chapters, so no tab label wraps or clips. */
-@container (max-width: 420px) {
-  .story__tabs { flex-direction: column; gap: 6px; }
-  .story__tab { min-block-size: 48px; text-align: start; padding-inline: 14px; }
-}
-
-.story__tab[aria-selected="true"] {
-  background: var(--ink);
-  color: var(--stage);
-  border-color: var(--ink);
-}
-
-.story__text {
-  margin: 0;
-  font-size: var(--text-body);
-  line-height: 1.45;
-}
-
+/* The image takes 40% of the panel (up to 340 px) and gives way, down to 120 px, only when a
+   long chapter needs the room: text must never be cut, and there's no scrolling. */
 .story__figure {
   position: relative;
-  flex: 1;
-  min-block-size: 0;
+  flex: 0 1 clamp(150px, 40%, 340px);
+  min-block-size: 120px;
   margin: 0;
-  border-radius: 8px;
+  overflow: hidden;
+}
+
+.story__frame {
+  position: relative;
+  inline-size: 100%;
+  block-size: 100%;
   overflow: hidden;
   background: #0e0e10;
 }
 
 .story__image {
+  display: block;
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
-  display: block;
+  transform-origin: 50% 50%;
 }
 
+/* Close-up: the insert shot of the detail. A soft vignette, and story.js keeps pushing in
+   slowly once it lands, as if still leaning closer. */
+.story[data-kind="closeup"] .story__frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgb(0 0 0 / 0.45));
+  pointer-events: none;
+}
+
+/* Sketch: a sheet of paper on the designer's desk, taped down at a slight angle, with the
+   drawing printed into the paper (multiply) rather than laid on top of it. */
+.story[data-kind="sketch"] .story__figure {
+  padding: 22px 30px 26px;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgb(255 255 255 / 0.04), transparent 60%),
+    var(--plate-raised);
+}
+
+.story[data-kind="sketch"] .story__frame {
+  overflow: visible;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.25 0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    var(--paper);
+  rotate: var(--sketch-tilt);
+  box-shadow: 0 2px 2px rgb(0 0 0 / 0.2), 0 14px 30px rgb(0 0 0 / 0.45);
+}
+
+.story[data-kind="sketch"] .story__frame::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -10px;
+  inset-inline-start: 50%;
+  inline-size: 88px;
+  block-size: 22px;
+  translate: -50% 0;
+  rotate: 3deg;
+  background: rgb(236 226 200 / 0.72);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+  z-index: 1;
+}
+
+.story[data-kind="sketch"] .story__image {
+  mix-blend-mode: multiply;
+  object-fit: contain;
+}
+
+/* Until the renders exist: a labelled placeholder in the image's own treatment. */
 .story__pending {
   display: none;
   position: absolute;
   inset: 0;
   place-items: center;
-  font-size: 16px;
-  color: var(--ink-muted);
+  font-size: var(--text-small);
+  color: var(--ink-faint);
   border: 1px dashed var(--line);
-  border-radius: 8px;
+}
+
+.story[data-kind="sketch"] .story__pending {
+  color: rgb(58 52 45 / 0.55);
+  border-color: rgb(58 52 45 / 0.25);
 }
 
 .story.is-pending .story__image { visibility: hidden; }
 .story.is-pending .story__pending { display: grid; }
+
+.story__close {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-end: 10px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  inline-size: var(--hit);
+  block-size: var(--hit);
+  padding: 0;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--ink);
+  background: rgb(11 11 12 / 0.55);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+
+.story__body {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-block-size: 0;
+  padding: 20px 26px 22px;
+}
+
+.story__costume {
+  margin: 0;
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+  color: var(--accent);
+}
+
+.story__title {
+  margin: 0;
+  font-size: var(--text-panel-title);
+  font-weight: var(--weight-bold);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+/* Chapters: a row of text tabs; the current one is marked with the accent. */
+.story__tabs {
+  display: flex;
+  margin-block-start: 4px;
+  border-block-end: 1px solid var(--line);
+}
+
+.story__tab {
+  position: relative;
+  flex: 1;
+  min-block-size: 50px;
+  padding: 8px 4px;
+  font-size: 16px;
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+  color: var(--ink-faint);
+  background: none;
+  border: 0;
+}
+
+.story__tab[aria-selected="true"] {
+  color: var(--ink);
+}
+
+.story__tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 6px;
+  inset-block-end: -1px;
+  block-size: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+/* A narrow panel stacks the chapters, marked at the inline start instead. */
+@container (max-width: 360px) {
+  .story__tabs { flex-direction: column; border: 0; }
+  .story__tab { min-block-size: 46px; padding-inline: 16px 6px; text-align: start; }
+  .story__tab[aria-selected="true"]::after {
+    inset-block: 10px;
+    inset-inline: 0 auto;
+    inline-size: 3px;
+    block-size: auto;
+  }
+}
+
+.story__text {
+  margin: 0;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
 
 /* The connected transition: a hairline from the hotspot ring to the panel, and the close-up
    growing out of the ring. Both placed from screen coordinates, so physical on purpose. */
@@ -336,14 +453,17 @@ button {
   left: 0;
   top: 0;
   pointer-events: none;
-  background: var(--plate) center / cover no-repeat;
-  border: 2px solid var(--ink);
-  box-shadow: 0 12px 40px rgb(0 0 0 / 0.45);
+  background: #0e0e10 center / cover no-repeat;
+  box-shadow: 0 16px 44px rgb(0 0 0 / 0.5);
+}
+
+.story-flyer.is-sketch {
+  background-color: var(--paper);
+  background-size: contain;
 }
 
 .story-flyer.is-pending {
-  border-style: dashed;
-  border-color: var(--line);
+  border: 1px dashed var(--line);
 }
 
 /* ── Costume selector ─────────────────────────────────────────────── */
@@ -351,39 +471,54 @@ button {
 .selector {
   position: absolute;
   inset-inline: var(--edge);
-  inset-block-end: var(--edge);
+  inset-block-end: 28px;
   display: flex;
   justify-content: center;
   gap: 12px;
 }
 
+/* A thumbnail rendered from the costume itself, its name, and how much has been found. */
 .selector__item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  min-block-size: var(--hit);
-  min-inline-size: 180px;
-  padding: 10px 18px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  align-content: center;
+  column-gap: 14px;
+  min-block-size: 76px;
+  min-inline-size: 220px;
+  padding: 6px 18px 6px 6px;
   text-align: start;
   background: var(--plate);
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 12px;
+}
+
+.selector__thumb {
+  grid-row: 1 / span 2;
+  align-self: center;
+  inline-size: 48px;
+  block-size: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--stage);
+}
+
+.selector__name {
+  align-self: end;
+  font-size: 18px;
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+}
+
+.selector__count {
+  align-self: start;
+  font-size: 14px;
+  color: var(--ink-muted);
 }
 
 .selector__item[aria-current="true"] {
   border-color: var(--accent);
   box-shadow: inset 0 0 0 1px var(--accent);
-}
-
-.selector__name {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.selector__count {
-  font-size: 14px;
-  color: var(--ink-muted);
 }
 
 .selector__item.is-complete .selector__count {

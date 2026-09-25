@@ -1,3 +1,6 @@
+import '@fontsource/ibm-plex-sans/400.css';
+import '@fontsource/ibm-plex-sans/500.css';
+import '@fontsource/ibm-plex-sans/600.css';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/ui.css';
@@ -15,6 +18,7 @@ import { createStory } from './ui/story.js';
 import { createSelector } from './ui/selector.js';
 import { createIdle } from './ui/idle.js';
 import { createLabel } from './ui/label.js';
+import { captureThumbnails } from './stage/thumbnails.js';
 
 lockTouch();
 
@@ -31,6 +35,8 @@ const rigs = await loadCostumes(stage.scene, costumes, { onStatus: devTools?.sta
 const director = createDirector(stage, rigs);
 const turntables = createTurntables({ rigs, canvas, overlay, director });
 director.turntables = turntables;
+// Selector thumbnails, rendered from the costumes (this also uploads every texture up front).
+const thumbnails = captureThumbnails({ stage, rigs, director });
 
 const attract = createAttract({ overlay, content, rigs, stage, director, turntables });
 
@@ -41,7 +47,7 @@ const hotspots = createHotspots({
   onOpen: (rig, hotspot) => story.open(rig, hotspot),
 });
 story = createStory({ overlay, content, director, turntables, hotspots });
-const selector = createSelector({ overlay, content, rigs, director, story });
+const selector = createSelector({ overlay, content, rigs, director, story, thumbnails });
 const label = createLabel({ overlay, rigs });
 devTools?.attach({ stage, rigs, director, turntables });
 

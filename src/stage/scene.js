@@ -13,8 +13,10 @@ export function createStage(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, flags.dpr ?? MAX_PIXEL_RATIO));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  // AgX for now. Rakesh picks AgX or Neutral by eye once the real models are lit, and logs why.
-  renderer.toneMapping = THREE.AgXToneMapping;
+  // Neutral (Khronos PBR Neutral) keeps a textile's base colour close to the scan: it only
+  // compresses the brightest highlights. AgX desaturates more, which dulls the silk. ?tone=agx
+  // switches for comparison; Rakesh confirms by eye (DECISIONS.md).
+  renderer.toneMapping = flags.tone === 'agx' ? THREE.AgXToneMapping : THREE.NeutralToneMapping;
 
   const scene = new THREE.Scene();
   const stageColour = getComputedStyle(document.documentElement).getPropertyValue('--stage').trim();

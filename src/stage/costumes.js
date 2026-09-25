@@ -21,6 +21,13 @@ const KEY = {
 };const ENV_ON = 1;
 const ENV_OFF = 0.08;
 
+// Stage light that costs nothing to render: unlit gradients, added on top of what's behind.
+// A glow on a backdrop behind each costume separates dark silk and steel from the black stage
+// (the job a rim light would do, without another light every pixel pays for), and a pool of
+// light on the floor around the plinth grounds it. Both brighten and dim with the costume.
+const GLOW = { width: 3.2, height: 3.6, depth: -1.6, colour: 0x3a332c };
+const POOL = { radius: 1.25, colour: 0x2a2520 };
+
 const PLINTH_HEIGHT = 0.04;
 const PLINTH_BORDER = 0.12; // metres of plinth showing around the costume's base
 const FLOOR_BAND = 0.1;     // metres: the slice of the costume measured for its base
@@ -56,6 +63,7 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
   );
 
   const shadowTexture = createShadowTexture();
+  const lightTexture = createLightTexture();
 
   return costumes.map((data, index) => {
     const model = models[index];
@@ -110,6 +118,13 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
     shadow.scale.setScalar(base * 2.6);
     turntable.add(shadow);
 
+    const glow = new THREE.Mesh(new THREE.PlaneGeometry(GLOW.width, GLOW.height), lightMaterial(lightTexture, GLOW.colour));
+    glow.position.set(x, box.min.y + size.y * 0.55, GLOW.depth);
+    const pool = new THREE.Mesh(new THREE.PlaneGeometry(POOL.radius * 2, POOL.radius * 2), lightMaterial(lightTexture, POOL.colour));
+    pool.rotation.x = -Math.PI / 2;
+    pool.position.set(x, -PLINTH_HEIGHT + 0.001, 0.15);
+    scene.add(glow, pool);
+
     const key = new THREE.SpotLight(0xffffff, KEY.on, 0, KEY.angle, KEY.penumbra, 2);
     key.position.set(x, 0, 0).add(KEY.offset);
     key.target.position.set(x, box.min.y + size.y * 0.55, 0); // the garment's own middle, even when it floats
@@ -123,6 +138,7 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
 
     return {
       id: data.id, data, index, turntable, model, key, materials, size, box, radius, garmentRadius,
+      stageLights: [glow.material, pool.material],
       bottom: -PLINTH_HEIGHT,  // the framed height runs from the plinth's underside…
       top: box.max.y,          // …to the top of the costume
     };
@@ -135,7 +151,8 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
 export function lightTo(rig, level, duration = MOTION.light.duration, ease = MOTION.light.ease) {
   return gsap.timeline()
     .to(rig.key, { intensity: KEY.off + (KEY.on - KEY.off) * level, duration, ease }, 0)
-    .to(rig.materials, { envMapIntensity: ENV_OFF + (ENV_ON - ENV_OFF) * level, duration, ease }, 0);
+    .to(rig.materials, { envMapIntensity: ENV_OFF + (ENV_ON - ENV_OFF) * level, duration, ease }, 0)
+    .to(rig.stageLights, { opacity: level, duration, ease }, 0);
 }
 
 export const lightUp = (rig, duration) => lightTo(rig, 1, duration);
@@ -160,6 +177,30 @@ function floorRadius(model, box) {
 
 function loadModel(url, onProgress) {
   return loader.loadAsync(url, onProgress).then((gltf) => gltf.scene);
+}
+
+// Soft round falloff for the backdrop glow and the floor pool.
+function createLightTexture() {
+  const size = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  gradient.addColorStop(0.35, 'rgba(255, 255, 255, 0.55)');
+  gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.15)');
+  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+function lightMaterial(map, colour) {
+  return new THREE.MeshBasicMaterial({
+    map, color: colour, transparent: true, opacity: 1, depthWrite: false, blending: THREE.AdditiveBlending,
+  });
 }
 
 function createShadowTexture() {
