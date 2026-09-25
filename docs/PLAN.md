@@ -109,7 +109,7 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 ## 4. Hotspots (~1 h)
 - [x] DOM markers projected every frame, with opacity fading on the facing test.
 - [x] Plain ring marker with a 60 px touch target; the label goes on the outward side; labels hide while `.spinning` is set, and fade (not jump) when they change side.
-- [x] Real positions placed for every hotspot (`dev.probe` ray helper, checked with markers on the model). National Costume and Parade Armour have 4 each (front, front, side, back); the costume-2 stand-in has 3 placeholders.
+- [x] Real positions placed for every hotspot (`dev.probe` ray helper, checked with markers on the model). National Costume and Parade Armour have 4 each (front, front, side, back); the costume-2 stand-in has 3 placeholders (since replaced by the Calligraphy Dress, 4 hotspots).
 - [x] Seen state: a ring fills once opened.
 - [x] Checked: the back hotspot only appears (and is only tappable) once the costume is turned round.
 
@@ -182,6 +182,7 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 - [x] Stage light: a backdrop glow behind each costume and a pool of light around each plinth, both unlit gradients that follow the costume's light level.
 - [x] Tone mapping: Neutral by default (`?tone=agx` to compare). Rakesh to confirm by eye.
 - [ ] Copy: several chapters run 4–5 lines; the brief says "about 2 lines each". Trim in Rakesh's copy pass.
+- [ ] Copy pass for all three costumes at once (Rakesh, later): every hotspot's Material / How it was made / The artistry, plus alt texts. The current text is a placeholder draft. Keep the dress's lettering honest (ornament, not text), and list what's invented for the README.
 
 ## Rakesh's changes after step 10
 - [x] Depth instead of a backdrop wall: shafts of light through haze, drifting dust, distant shafts receding into the dark (`stage/atmosphere.js`).
@@ -189,9 +190,12 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 - [x] Error pass: every flow run in the browser (attract, enter, all 8 stories and chapters, switching, idle reset), no console errors. Fixed an undefined GLSL `smoothstep` and the dust's pixel ratio.
 - [x] Attract: the wide shot holds 7.5 s with all three turning slowly together, then the hero shots; changes of turntable pace glide instead of jolting.
 - [x] Attract: every loop starts from the costumes' first positions; they turn back while the camera returns to the wide shot (end of each loop, and the idle return).
+- [x] Third costume: the Calligraphy Dress, through the pipeline (stood upright, centred on its skirt), with its accent, title, context, credit and four hotspots with copy.
 - [x] Switching: every arrival turns the same gentle 60° onto the costume's front and goes straight into its slow turn (was 0.97–5.51 rad, then a 3 s dead stop); a drag started mid-move takes over when the move lands.
 - [x] Switching is a light cross-fade: the costume the camera leaves fades out, the next comes up out of the dark as the camera lands; nothing pops in or out (fixed "going dark" never dimming the room fill).
 - [x] Less light behind the costumes: the haze sits above them, narrower and fainter, so the space right behind each garment stays dark.
+- [ ] Rakesh: re-pose the dress's forearms in Blender (see DECISIONS: Third costume). Then `npm run models`, and Claude places the cuff hotspot again.
+- [ ] Rakesh: check all of it on the iPad (look, and fps against the ~54 before; three real models now load).
 - [ ] More changes from Rakesh.
 
 ## 11. Arabic and RTL (~1 h)

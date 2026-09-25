@@ -93,16 +93,31 @@ function bakeTransforms() {
 //   height   its real height in metres, top to bottom (omit to keep the file's scale)
 //   lift     metres between the plinth and its lowest point (a garment that ends at the knee
 //            floats at knee height, as on an invisible mannequin)
-function placeOnStage({ rotateY = 0, height, lift = 0 }) {
+//   centreOn fraction of the height, from the bottom, whose vertices set the turntable's axis
+//            (default: the whole model). A garment whose sleeves reach forward would otherwise
+//            turn off-centre; 0.25 puts the axis under the skirt, like a dress form's stand, and
+//            keeps it there if the sleeves are re-posed later.
+//   tilt     { x, z } degrees to stand a leaning scan upright, applied after rotateY and before
+//            it is measured: +x brings the top forward (+Z), +z brings it towards −X.
+function placeOnStage({ rotateY = 0, height, lift = 0, centreOn, tilt }) {
   return (document) => {
+    if (tilt) {
+      for (const mesh of document.getRoot().listMeshes()) {
+        transformMesh(mesh, rotationY(rotateY));
+        transformMesh(mesh, rotationX(tilt.x ?? 0));
+        transformMesh(mesh, rotationZ(tilt.z ?? 0));
+      }
+      rotateY = 0; // already turned
+    }
     const scene = document.getRoot().listScenes()[0];
     const { min, max } = getBounds(scene);
     const s = height ? height / (max[1] - min[1]) : 1;
     const angle = (rotateY * Math.PI) / 180;
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
-    const cx = (min[0] + max[0]) / 2;
-    const cz = (min[2] + max[2]) / 2;
+    const [cx, cz] = centreOn
+      ? centreBelow(document, min[1] + centreOn * (max[1] - min[1]))
+      : [(min[0] + max[0]) / 2, (min[2] + max[2]) / 2];
 
     // p' = s · Ry · (p − c) + (0, lift, 0), with c the bottom-centre of the bounds. Column-major.
     const matrix = [
@@ -113,6 +128,44 @@ function placeOnStage({ rotateY = 0, height, lift = 0 }) {
     ];
     for (const mesh of document.getRoot().listMeshes()) transformMesh(mesh, matrix);
   };
+}
+
+// Rotation matrices (column-major, degrees) for placeOnStage.
+function rotationX(degrees) {
+  const a = (degrees * Math.PI) / 180;
+  const [c, s] = [Math.cos(a), Math.sin(a)];
+  return [1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1];
+}
+function rotationY(degrees) {
+  const a = (degrees * Math.PI) / 180;
+  const [c, s] = [Math.cos(a), Math.sin(a)];
+  return [c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1];
+}
+function rotationZ(degrees) {
+  const a = (degrees * Math.PI) / 180;
+  const [c, s] = [Math.cos(a), Math.sin(a)];
+  return [c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+}
+
+// The x/z centre of the bounds of every vertex below height `limit`.
+function centreBelow(document, limit) {
+  const low = [Infinity, Infinity];
+  const high = [-Infinity, -Infinity];
+  const p = [0, 0, 0];
+  for (const mesh of document.getRoot().listMeshes()) {
+    for (const primitive of mesh.listPrimitives()) {
+      const positions = primitive.getAttribute('POSITION');
+      for (let i = 0; i < positions.getCount(); i++) {
+        positions.getElement(i, p);
+        if (p[1] > limit) continue;
+        low[0] = Math.min(low[0], p[0]);
+        high[0] = Math.max(high[0], p[0]);
+        low[1] = Math.min(low[1], p[2]);
+        high[1] = Math.max(high[1], p[2]);
+      }
+    }
+  }
+  return [(low[0] + high[0]) / 2, (low[1] + high[1]) / 2];
 }
 
 // Correct material values that an exporter got wrong, by material name, e.g.

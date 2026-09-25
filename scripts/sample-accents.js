@@ -2,9 +2,10 @@
 // The brief asks for "a distinct accent colour taken from each garment". This takes it from the
 // garment literally: it reads each optimised model's colour textures, keeps the coloured pixels
 // (ignoring near-black, near-white and grey), groups them into hue families and averages each
-// family. It prints the three strongest families, so the characteristic one can be chosen and
-// named (a silk, a gilding), and lightens each, keeping its hue, until it reads on the dark
-// stage at WCAG 4.5:1, because the accent is used for small text and thin lines.
+// family. It prints the three strongest families (or as many as asked: npm run accents -- 6), so
+// the characteristic one can be chosen and named (a silk, a gilding), and lightens each, keeping
+// its hue, until it reads on the dark stage at WCAG 4.5:1, because the accent is used for small
+// text and thin lines.
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { NodeIO } from '@gltf-transform/core';
@@ -16,6 +17,7 @@ const MODELS = 'public/models';
 const STAGE = [0x0b, 0x0b, 0x0c];
 const MIN_CONTRAST = 4.5;
 const MIN_SATURATION = 0.14; // low enough to catch gilding on steel, which is only faintly yellow
+const FAMILIES = Number(process.argv[2]) || 3; // npm run accents -- 6 lists more, e.g. a print's minor colours
 
 await MeshoptDecoder.ready;
 const io = new NodeIO()
@@ -51,7 +53,7 @@ for (const file of readdirSync(MODELS).filter((f) => f.endsWith('.glb'))) {
   const used = new Set();
   const order = bins.map((bin, i) => i).sort((a, b) => bins[b].weight - bins[a].weight);
   for (const i of order) {
-    if (families.length === 3 || !bins[i].n || used.has(i)) continue;
+    if (families.length === FAMILIES || !bins[i].n || used.has(i)) continue;
     const members = [i - 1, i, i + 1].map((k) => (k + 36) % 36).filter((k) => !used.has(k));
     members.forEach((k) => used.add(k));
     const sum = members.reduce((acc, k) => ({

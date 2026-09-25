@@ -45,5 +45,24 @@
     "_texture": "Currently the 1K download (Sketchfab's '-1k' option), which is too soft for a full-body scan. Re-download at 4K and the same setting uses it.",
     "changes": "Turned -90\u00b0 to face the front and centred on the turntable. Simplified from 1M to ~450k triangles (meshoptimizer). Colour texture converted to WebP. Geometry compressed with meshopt.",
     "_simplify": "Steel scans carry their relief (repouss\u00e9 lions, scrollwork, rivets) in the geometry, not the texture. At 150k triangles the relief collapsed into faceted 'foil'; 300k still lost it; 450k keeps most of it. Over the file budget (4.5 MB) until a normal map is baked from the 1M original onto a ~150k mesh."
+  },
+  "Calligraphy Dress.glb": {
+    "place": {
+      "rotateY": 0,
+      "tilt": {
+        "x": 5.5,
+        "z": 2.4
+      },
+      "height": 1.42,
+      "lift": 0.05,
+      "centreOn": 0.25
+    },
+    "simplifyRatio": 0.25,
+    "simplifyError": 0.005,
+    "textureSize": {
+      "baseColorTexture": 4096
+    },
+    "_place": "An Artec Leo scan in millimetres, already facing front. Height 1.42 m is its true size, shoulder to hem; the hem sits 5 cm above the plinth, as on an invisible dress form. The scan leaned about 6\u00b0 back and 2.5\u00b0 sideways (the chest 12 cm behind and 5 cm beside the hem's centre), so tilt stands it upright; after it, every cross-section from hem to chest is centred within 1 cm. The forearms are bent forward from the scan, so the axis is centred on the skirt (centreOn 0.25), not the whole bounds; that also keeps the hotspots in place if the sleeves are re-posed.",
+    "changes": "Stood upright (tilted 5.5\u00b0 forward and 2.4\u00b0 sideways), scaled from millimetres to metres and centred on the turntable under the skirt. Simplified from 463k to ~116k triangles (meshoptimizer). The 4K colour texture converted to WebP. Geometry compressed with meshopt."
   }
 }
