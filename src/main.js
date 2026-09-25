@@ -19,6 +19,7 @@ import { createSelector } from './ui/selector.js';
 import { createIdle } from './ui/idle.js';
 import { createLabel } from './ui/label.js';
 import { captureThumbnails } from './stage/thumbnails.js';
+import { updateAtmosphere } from './stage/atmosphere.js';
 
 lockTouch();
 
@@ -83,6 +84,7 @@ gsap.ticker.add((time, deltaMs) => {
   stats?.begin();
   turntables.update(deltaMs / 1000);
   director.update();
+  updateAtmosphere(time, stage.renderer.getPixelRatio());
   stage.camera.updateMatrixWorld();
   hotspots.update();
   story.update();

@@ -10,10 +10,11 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
 - Lighting:
   - `RoomEnvironment` via `PMREMGenerator` at low intensity as fill (no HDR download)
   - one `SpotLight` key per costume, positioned front-high and a little off-axis so it rakes across the fabric
-  - a costume goes dark by tweening its key light intensity and its materials' `envMapIntensity` to near zero. Collect each costume's materials at load.
+  - a costume goes dark by tweening its key light intensity and its materials' `envMapIntensity` to zero. Collect each costume's materials at load, and give them the environment as their own `envMap`: three.js ignores `envMapIntensity` for `scene.environment`.
+  - below light level 0.1 a costume also dissolves into the stage colour (a uniform mixed in at the end of its shader), so at 0 it's invisible and can be shown or hidden unseen. Switching costumes is a light cross-fade: the one the camera leaves fades out, the next comes up as the camera lands.
   - never toggle a light's `visible`. Three.js recompiles every material when the number of lights changes, which stalls the iPad. Only change intensity.
 - Background: a near-black stage colour.
-- Stage light without lights: an unlit, additive gradient glow on a backdrop behind each costume and a pool on the floor around each plinth, faded with the costume's light level.
+- Air without lights (`atmosphere.js`): each costume stands in a shaft of light through haze (a cone mesh, only its far half drawn, brightness from the view angle), with a pool on the floor and dust drifting in it; all of it follows the costume's light level. Faint shafts 7–30 m back give depth through parallax. Unlit and additive, so nothing recompiles.
 - Tone mapping: Neutral by default (`?tone=agx` to compare); Rakesh confirms by eye. Output is sRGB.
 - Camera: a PerspectiveCamera with a vertical FOV around 30° (roughly a 45 mm full-frame vertical equivalent). Rakesh has the final say on the lens.
 
@@ -21,7 +22,8 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
 - A horizontal drag rotates the focused costume's turntable (`rotation.y`). Vertical drag is ignored.
 - Only the first pointer counts; extra touches are ignored. Use `setPointerCapture`.
 - On release, the turntable keeps turning with inertia and damping; clamp the maximum angular velocity.
-- Auto-rotate: a slow constant turn when idle. It resumes about 3 s after the last touch, easing up to speed rather than jumping.
+- Auto-rotate: a slow constant turn when idle. It resumes about 3 s after the last touch, easing up to speed rather than jumping. Changes of pace glide.
+- Attract: all three turn slowly together (0.15 rad/s). Each loop starts from the costumes' first positions (`rig.home`): the director turns them back while the camera returns to the wide shot.
 - Fast spin: when |angular velocity| passes a threshold, add `.spinning` to the overlay (labels hide). Remove it once the turntable settles.
 - Tap vs drag: movement under ~8 px and release under ~300 ms counts as a tap. Hotspots are DOM buttons, so taps on them never reach the canvas.
 - No pinch zoom on the model. Close-ups are authored through hotspots, which keeps the costume readable on screen.
@@ -52,7 +54,8 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
   3. Facing test: rotate the local normal by the turntable's world quaternion, then take `d = dot(normal, normalize(cameraPos − world))`. Set `opacity = smoothstep(0.05, 0.3, d)`. Below 0.5 opacity, turn off pointer events.
   4. Label side: if the marker is left of the costume's centre on screen, the label goes left; otherwise right. Keep labels clear of the screen edges.
 - Optional: raycast occlusion every ~6 frames, only if a hotspot visibly shows through an arm or a fold.
-- Marker: a hollow ring so the detail stays visible through it, with the label on a short leader line. Once opened, the ring fills (seen state).
+- Marker: a fine hollow ring with a centre point, so the detail stays visible through it, and the label as type on the image (soft halo, no plate) on a hairline leader. Once opened, the ring fills (seen state).
+- Labels are choreographed: on arrival the rings come in one after another and the labels follow. A label draws out only while its detail faces the camera (with hysteresis) and draws back as it turns away.
 
 ## State machine and timelines
 - The main modes are `attract`, `explore`, `story` and `tour`. While a timeline runs between them, the app sits in `transition`.
@@ -116,6 +119,7 @@ src/
     scene.js         renderer, camera, environment, lights, plinths, shadows
     costumes.js      loading, turntable groups, light up / go dark
     stand-in.js      dress-form stand-ins while a costume has no model yet
+    atmosphere.js    shafts of light, haze, dust and distant lights (unlit, additive)
     thumbnails.js    selector thumbnails rendered from the costumes at load (also uploads textures)
     turntable.js     drag, inertia, auto-rotate, fast-spin detection
     director.js      framing, lens shift, push-in, mode timelines

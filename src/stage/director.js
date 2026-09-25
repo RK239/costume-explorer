@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { state } from '../state.js';
-import { lightUp, goDark, lightTo } from './costumes.js';
+import { lightTo, setLight } from './costumes.js';
 import { MOTION } from '../motion.js';
 
 // The director owns the camera. Visitors never move it; every move is a GSAP tween on `shot`.
@@ -208,51 +208,85 @@ export function createDirector(stage, rigs) {
     return gsap.to(shot, { ...target, duration, ease: MOTION.glide.ease });
   }
 
+  // A costume and the shaft of light it stands in show and hide together.
+  function show(rig, visible) {
+    rig.turntable.visible = rig.air.visible = visible;
+  }
+
   // First frame: the attract wide shot, every costume softly lit, no move.
   function startInAttract() {
     state.mode = 'attract';
     for (const rig of rigs) {
-      rig.turntable.visible = true;
-      lightTo(rig, ATTRACT_GLOW, 0);
+      show(rig, true);
+      setLight(rig, ATTRACT_GLOW);
     }
     cut(wideShot());
   }
 
-  // Back to the lineup: every costume shows at the attract glow, the camera pulls back.
-  // `extra` lets the caller fold other moves (closing a story) into the same timeline.
+  // Back to the lineup: every costume shows at the attract glow, the camera pulls back, and
+  // every costume turns back to its first position, so the loop never carries on from where
+  // the last visitor left it. `extra` lets the caller fold other moves (closing a story) into
+  // the same timeline.
   function toAttract(extra) {
     const timeline = gsap.timeline();
     if (extra) timeline.add(extra, 0);
-    for (const rig of rigs) rig.turntable.visible = true;
+    for (const rig of rigs) show(rig, true);
     rigs.forEach((rig) => timeline.add(lightTo(rig, ATTRACT_GLOW), 0.2));
     timeline.to(shot, { ...wideShot(), ...MOTION.camera }, 0.2);
+    turnHome(timeline, 0.2);
     return play(timeline, 'attract');
   }
 
-  // Into one costume (from the lineup or another costume): it lights up, the others go dark,
-  // the camera travels to it and the accent colour follows. The costume arrives mid-turn and
-  // settles facing the visitor as the camera lands, so the first view is always its front.
-  // Once there, the others hide, so they cost nothing to draw. `extra` folds another move
-  // (closing a story) into the timeline.
+  // Every costume turns back, the shortest way, to its first position, then stands still until
+  // the attract loop sets it turning again. The target is read when the turn starts, since the
+  // turntables keep moving until then. Holding again at the end also wins over a story's close,
+  // which lets its costume go part-way through.
+  function turnHome(timeline, position) {
+    const { duration, ease } = MOTION.home;
+    rigs.forEach((rig, i) => {
+      const rotation = rig.turntable.rotation;
+      timeline.call(() => turntables?.hold(i), null, position);
+      timeline.to(rotation, { y: () => rotation.y + wrapAngle(rig.home - rotation.y), duration, ease }, position);
+      timeline.call(() => turntables?.hold(i), null, position + duration);
+    });
+  }
+
+  // Into one costume (from the lineup or another costume): the camera travels to it, the costume
+  // it leaves fades to black as it goes, and this one comes up out of black as the camera lands,
+  // like a cross-fade of stage lights. The accent colour follows. The costume arrives mid-turn and
+  // settles facing the visitor as the camera lands, so the first view is always its front, then
+  // keeps turning slowly. Once there, the others hide (black by then, so it's never seen), and
+  // they cost nothing to draw. `extra` folds another move (closing a story) into the timeline.
   function toCostume(index, extra) {
     const rig = rigs[index];
-    state.focus = index;
-    rig.turntable.visible = true;
     const rotation = rig.turntable.rotation;
+    const front = rotation.y + wrapAngle(-rotation.y); // the nearest front
+    // Switching from another costume, this one was hidden, so it comes into view in black (a
+    // neighbour's edge can already sit inside the frame) and is set out of sight to arrive the same
+    // way every time: turning forward by the same gentle angle onto its front. Arriving from the
+    // lineup it's in view, so it takes the shorter way to its front instead.
+    const hidden = !rig.turntable.visible;
+    const start = hidden ? front - MOTION.arrive.angle : rotation.y;
+    state.focus = index;
+    if (hidden) setLight(rig, 0);
+    show(rig, true);
     turntables?.hold(index);
+    rotation.y = start;
     const timeline = gsap.timeline({
       onComplete: () => {
-        rigs.forEach((r, i) => { r.turntable.visible = i === index; });
-        turntables?.free(index); // auto-rotate eases back in after the usual pause
+        rigs.forEach((r, i) => show(r, i === index));
+        // Straight into its slow turn: the arrival was a move, not a touch, so no pause.
+        turntables?.free(index, { wait: false });
       },
     });
     if (extra) timeline.add(extra, 0);
-    rigs.forEach((r, i) => timeline.add(i === index ? lightUp(r) : goDark(r), 0));
+    const { lightIn, lightOut } = MOTION;
+    rigs.forEach((r, i) => {
+      if (i === index) timeline.add(lightTo(r, 1, lightIn.duration, lightIn.ease), lightIn.at);
+      else timeline.add(lightTo(r, 0, lightOut.duration, lightOut.ease), 0);
+    });
     timeline.to(shot, { ...frameCostume(rig), ...MOTION.camera }, 0);
-    // Keep turning the way it was going, and land on the next front (never more than a turn).
-    const front = rotation.y + wrapAngle(-rotation.y);
-    const settle = front > rotation.y ? front : front + Math.PI * 2;
-    timeline.to(rotation, { y: settle, duration: MOTION.camera.duration, ease: 'power2.out' }, 0);
+    timeline.to(rotation, { y: front, duration: MOTION.camera.duration, ease: MOTION.arrive.ease }, 0);
     timeline.add(setAccent(rig), 0);
     return play(timeline, 'explore');
   }
@@ -299,6 +333,7 @@ export function createDirector(stage, rigs) {
     set turntables(t) { turntables = t; },
     set headlineRect(fn) { headlineRect = fn; },
     attractGlow: ATTRACT_GLOW,
+    turnHome,
     freeRegion,
     frameCostume,
     frameLineup,

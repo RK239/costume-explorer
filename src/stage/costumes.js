@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { createStandIn } from './stand-in.js';
+import { createAir, createDistance } from './atmosphere.js';
 import { MOTION } from '../motion.js';
 
 // Metres between costumes along X. Close enough that the attract wide shot shows them large,
@@ -15,18 +16,18 @@ const SPACING = 1.8;
 const KEY = {
   offset: new THREE.Vector3(1.1, 3.4, 2.8), // from the costume's feet
   on: 55,
-  off: 0.5,          // never 0 and never visible = false: changing the light count recompiles every shader
+  off: 0,            // black; dim by intensity, never with visible = false (changing the light count recompiles every shader)
   angle: THREE.MathUtils.degToRad(15),
   penumbra: 0.7,
-};const ENV_ON = 1;
-const ENV_OFF = 0.08;
-
-// Stage light that costs nothing to render: unlit gradients, added on top of what's behind.
-// A glow on a backdrop behind each costume separates dark silk and steel from the black stage
-// (the job a rim light would do, without another light every pixel pays for), and a pool of
-// light on the floor around the plinth grounds it. Both brighten and dim with the costume.
-const GLOW = { width: 3.2, height: 3.6, depth: -1.6, colour: 0x3a332c };
-const POOL = { radius: 1.25, colour: 0x2a2520 };
+};
+// Below this light level a costume fades out of the scene; above it only the key light changes.
+// Down to it, the environment fill stays full, so a neighbour dimmed in the attract state (0.1)
+// still reads as part of the gallery. Below it the fill goes out and the costume dissolves into
+// the stage colour, so at 0 it's the colour of the empty stage: switched in or out, it's never
+// seen appearing or disappearing. Each costume's materials get the environment as their own
+// envMap, because three.js ignores a material's envMapIntensity when the light comes from
+// scene.environment (so a "dark" costume used to stay lit by the room).
+const FADE_BELOW = 0.1;
 
 const PLINTH_HEIGHT = 0.04;
 const PLINTH_BORDER = 0.12; // metres of plinth showing around the costume's base
@@ -63,7 +64,9 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
   );
 
   const shadowTexture = createShadowTexture();
-  const lightTexture = createLightTexture();
+  // The stage colour as it reaches the screen (sRGB), for costumes to fade into.
+  const stageColour = scene.background.clone().convertLinearToSRGB();
+  scene.add(createDistance({ floor: -PLINTH_HEIGHT }));
 
   return costumes.map((data, index) => {
     const model = models[index];
@@ -118,45 +121,86 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
     shadow.scale.setScalar(base * 2.6);
     turntable.add(shadow);
 
-    const glow = new THREE.Mesh(new THREE.PlaneGeometry(GLOW.width, GLOW.height), lightMaterial(lightTexture, GLOW.colour));
-    glow.position.set(x, box.min.y + size.y * 0.55, GLOW.depth);
-    const pool = new THREE.Mesh(new THREE.PlaneGeometry(POOL.radius * 2, POOL.radius * 2), lightMaterial(lightTexture, POOL.colour));
-    pool.rotation.x = -Math.PI / 2;
-    pool.position.set(x, -PLINTH_HEIGHT + 0.001, 0.15);
-    scene.add(glow, pool);
+    // The shaft of light the costume stands in (atmosphere.js). Its haze behind the costume
+    // separates dark silk and steel from the black, the job a rim light would do.
+    const airLevel = { value: 1 };
+    const air = createAir({ x, floor: -PLINTH_HEIGHT, level: airLevel });
+    scene.add(air);
 
     const key = new THREE.SpotLight(0xffffff, KEY.on, 0, KEY.angle, KEY.penumbra, 2);
     key.position.set(x, 0, 0).add(KEY.offset);
     key.target.position.set(x, box.min.y + size.y * 0.55, 0); // the garment's own middle, even when it floats
     scene.add(key, key.target);
 
-    // Every material on the costume, collected once so light-up / go-dark can tween them together.
-    const materials = [];
+    // Every material on the costume and its plinth, collected once so light-up / go-dark can
+    // tween them together.
+    const materials = [plinth.material, mark.material];
     model.traverse((node) => {
       if (node.isMesh) materials.push(...[node.material].flat());
     });
+    const envOn = scene.environmentIntensity;
+    for (const material of materials) {
+      material.envMap = scene.environment;
+      material.envMapIntensity = envOn;
+    }
+    const fade = { value: 0 };
+    for (const material of [...materials, shadow.material]) fadeIntoStage(material, fade, stageColour);
 
     return {
-      id: data.id, data, index, turntable, model, key, materials, size, box, radius, garmentRadius,
-      stageLights: [glow.material, pool.material],
+      id: data.id, data, index, turntable, model, key, materials, envOn, fade, size, box, radius,
+      garmentRadius, air, airLevel,
+      home: data.yawOffset ?? 0, // the turntable's first position; every attract loop starts from it
       bottom: -PLINTH_HEIGHT,  // the framed height runs from the plinth's underside…
       top: box.max.y,          // …to the top of the costume
     };
   });
 }
 
-// Light a costume to `level` (0 = dark, 1 = fully lit): its key light and its share of the
-// environment fill move together. Returns a GSAP timeline, so the director can place it inside
-// a bigger move.
+// Light a costume to `level` (0 = black, 1 = fully lit): its key light, its share of the
+// environment fill and the air around it move together. Returns a GSAP timeline, so the
+// director can place it inside a bigger move.
 export function lightTo(rig, level, duration = MOTION.light.duration, ease = MOTION.light.ease) {
+  const { key, env, fade } = lightLevels(rig, level);
   return gsap.timeline()
-    .to(rig.key, { intensity: KEY.off + (KEY.on - KEY.off) * level, duration, ease }, 0)
-    .to(rig.materials, { envMapIntensity: ENV_OFF + (ENV_ON - ENV_OFF) * level, duration, ease }, 0)
-    .to(rig.stageLights, { opacity: level, duration, ease }, 0);
+    .to(rig.key, { intensity: key, duration, ease }, 0)
+    .to(rig.materials, { envMapIntensity: env, duration, ease }, 0)
+    .to(rig.fade, { value: fade, duration, ease }, 0)
+    .to(rig.airLevel, { value: level, duration, ease }, 0);
 }
 
-export const lightUp = (rig, duration) => lightTo(rig, 1, duration);
-export const goDark = (rig, duration) => lightTo(rig, 0, duration);
+// The same, at once: for a first frame, a thumbnail, or a costume about to come into view.
+export function setLight(rig, level) {
+  const { key, env, fade } = lightLevels(rig, level);
+  rig.key.intensity = key;
+  for (const material of rig.materials) material.envMapIntensity = env;
+  rig.fade.value = fade;
+  rig.airLevel.value = level;
+}
+
+function lightLevels(rig, level) {
+  const presence = Math.min(1, level / FADE_BELOW); // 0: gone into the stage, 1: fully there
+  return {
+    key: KEY.off + (KEY.on - KEY.off) * level,
+    env: rig.envOn * presence,
+    fade: 1 - presence,
+  };
+}
+
+// Mix a material's final colour towards the stage colour by `fade` (a shared { value } uniform).
+// Added once, at the very end of three.js's own shader, after tone mapping and the sRGB output,
+// so at 1 the pixel is exactly the stage background. Changing `fade` is only a uniform: no
+// recompile. Every costume's materials share one program; each keeps its own uniform.
+function fadeIntoStage(material, fade, stageColour) {
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.stageFade = fade;
+    shader.uniforms.stageColour = { value: stageColour };
+    shader.fragmentShader = shader.fragmentShader
+      .replace('void main() {', 'uniform float stageFade;\nuniform vec3 stageColour;\nvoid main() {')
+      .replace('#include <dithering_fragment>',
+        '#include <dithering_fragment>\n\tgl_FragColor.rgb = mix( gl_FragColor.rgb, stageColour, stageFade );');
+  };
+}
+
 
 // The costume's radius at floor level: the farthest vertex from the axis in its lowest 10 cm.
 function floorRadius(model, box) {
@@ -177,30 +221,6 @@ function floorRadius(model, box) {
 
 function loadModel(url, onProgress) {
   return loader.loadAsync(url, onProgress).then((gltf) => gltf.scene);
-}
-
-// Soft round falloff for the backdrop glow and the floor pool.
-function createLightTexture() {
-  const size = 256;
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-  gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-  gradient.addColorStop(0.35, 'rgba(255, 255, 255, 0.55)');
-  gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.15)');
-  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, size, size);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
-}
-
-function lightMaterial(map, colour) {
-  return new THREE.MeshBasicMaterial({
-    map, color: colour, transparent: true, opacity: 1, depthWrite: false, blending: THREE.AdditiveBlending,
-  });
 }
 
 function createShadowTexture() {

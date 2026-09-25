@@ -7,6 +7,7 @@ import { state } from '../state.js';
 const AUTO_SPEED = 0.25;   // radians per second, about one turn every 25 s
 const AUTO_DELAY = 3;      // seconds after the last touch before auto-rotate returns
 const AUTO_RAMP = 1.5;     // seconds to ease back up to speed
+const SPEED_GLIDE = 1;     // seconds (time constant) to glide to a new pace, e.g. the attract state's slower turn
 const DRAG_GAIN = 1.3;     // >1 because the fabric sits nearer the axis than the costume's outer edge
 const MAX_SPEED = 10;      // radians per second (~1.6 turns/s): the clamp on a very fast spin
 const DAMPING = 2.2;       // inertia decay per second
@@ -19,15 +20,28 @@ const TAP_TIME_MS = 300;
 
 export function createTurntables({ rigs, canvas, overlay, director }) {
   // One motion state per costume. All of them turn; only the focused one takes touches.
-  const motion = rigs.map(() => ({ velocity: 0, auto: 1 }));
+  // speed is the pace auto-rotate aims for; rate glides towards it, so a change of pace never jumps.
+  // auto starts at 0: on the first view the turntables ease up from rest, like a motor starting.
+  const motion = rigs.map(() => ({ velocity: 0, auto: 0, speed: AUTO_SPEED, rate: AUTO_SPEED }));
   const held = new Set(); // costumes the director is turning (a story is open): no drag, no auto-rotate
   const tapListeners = [];
   let drag = null;
   let lastTouch = -Infinity;
   let spinning = false;
 
+  // Only explore mode turns the costume, and never while the director is moving or holding it.
+  const canTurn = () => !director.locked && state.mode === 'explore' && !held.has(state.focus);
+
+  // Touching a spinning turntable catches it, like putting a hand on a real one.
+  function takeHold() {
+    drag.turns = true;
+    const m = motion[state.focus];
+    m.velocity = 0;
+    m.auto = 0;
+  }
+
   canvas.addEventListener('pointerdown', (event) => {
-    if (drag || director.locked) return; // only the first finger counts, and never mid-transition
+    if (drag) return; // only the first finger counts
     canvas.setPointerCapture(event.pointerId);
     const now = performance.now();
     drag = {
@@ -35,16 +49,15 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
       startX: event.clientX, startY: event.clientY, startTime: now,
       lastX: event.clientX, moved: 0,
       samples: [],
-      // Only explore mode turns the costume. Elsewhere a touch can still be a tap
-      // (enter from attract, close a story).
-      turns: state.mode === 'explore' && !held.has(state.focus),
+      turns: false,
+      // A touch that lands mid-transition does nothing while the move runs. If it's still
+      // dragging when the move lands, it takes the turntable from there, so a quick visitor
+      // isn't ignored; but it never counts as a tap. Outside explore a touch can still be a
+      // tap (enter from attract, close a story).
+      early: director.locked,
     };
     lastTouch = now;
-    if (!drag.turns) return;
-    // Touching a spinning turntable catches it, like putting a hand on a real one.
-    const m = motion[state.focus];
-    m.velocity = 0;
-    m.auto = 0;
+    if (canTurn()) takeHold();
   });
 
   canvas.addEventListener('pointermove', (event) => {
@@ -54,6 +67,7 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
     drag.lastX = event.clientX;
     drag.moved = Math.max(drag.moved, Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY));
     lastTouch = now;
+    if (!drag.turns && drag.early && canTurn()) takeHold();
     if (!drag.turns) return;
 
     const rig = rigs[state.focus];
@@ -67,7 +81,7 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
   function release(event) {
     if (!drag || event.pointerId !== drag.id) return;
     const now = performance.now();
-    const isTap = drag.moved < TAP_MOVE_PX && now - drag.startTime < TAP_TIME_MS;
+    const isTap = !drag.early && drag.moved < TAP_MOVE_PX && now - drag.startTime < TAP_TIME_MS;
 
     if (drag.turns) {
       let velocity = 0;
@@ -94,15 +108,17 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
 
     rigs.forEach((rig, i) => {
       const m = motion[i];
-      const touched = i === state.focus;
+      // In the attract state nobody's hand is on a turntable, so none waits for a touch to end.
+      const touched = i === state.focus && state.mode !== 'attract';
       if (held.has(i)) return; // the director is turning it
       if (touched && drag?.turns) return; // the finger is in charge
 
       m.velocity *= Math.exp(-DAMPING * dt);
       if (!touched || sinceTouch > AUTO_DELAY) m.auto = Math.min(1, m.auto + dt / AUTO_RAMP);
+      m.rate += (m.speed - m.rate) * Math.min(1, dt / SPEED_GLIDE);
 
       const ease = m.auto * m.auto * (3 - 2 * m.auto); // smoothstep: eases up to speed, no jump
-      rig.turntable.rotation.y += (m.velocity + AUTO_SPEED * ease) * dt;
+      rig.turntable.rotation.y += (m.velocity + m.rate * ease) * dt;
     });
 
     // Fast-spin state for the focused costume, with hysteresis so it doesn't flicker.
@@ -119,10 +135,12 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
   }
 
   // Letting go counts as a touch: auto-rotate waits the usual delay, then eases back in.
-  function free(index) {
-    held.delete(index);
-    motion[index].auto = 0;
-    lastTouch = performance.now();
+  // Only a costume that was held starts again from rest; one already turning keeps turning.
+  // The attract state passes its own slower pace, and no wait, since nobody touched anything.
+  function free(index, { speed = AUTO_SPEED, wait = true } = {}) {
+    if (held.delete(index)) motion[index].auto = 0;
+    motion[index].speed = speed;
+    if (wait) lastTouch = performance.now();
   }
 
   return {

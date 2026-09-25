@@ -96,7 +96,7 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
 
 ## Attract state (step 8)
 - **Problem (Rakesh, on the iPad):** on the lineup, each costume got a third of the width, about 5 cm tall on an 11" screen. Too small to stop anyone from a distance.
-- **Decision:** a loop like a film sequence, about 36 s: a wide shot (3.5 s), then each costume as a hero shot (~8 s), then back to the wide shot.
+- **Decision:** a loop like a film sequence, about 36 s: a wide shot (3.5 s; 7.5 s since the revision below), then each costume as a hero shot (~8 s), then back to the wide shot.
   - In the hero shot, the costume fills the height of its side of the screen, about 2.4× larger than on the lineup. Its key light swells while the others fall to 10%. Changing light is what catches the eye from across a room.
   - The wide shot stays, briefly, so visitors see there are three. It's the only place all three are shown together (a "Your call" answer).
   - **Rejected:** the static lineup (too small from a distance); cycling hero shots only (the visitor never learns there are three).
@@ -114,6 +114,14 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
   - **Kept:** the costume beside a headline column in landscape. For a tall figure it gives the most height; text under the costume would shrink it.
   - **Rejected:** text as a lower third over the costume (it covers the feet, and framing above it makes the costume smaller).
 - **Decision (2026-09-25):** the National Costume floats at its real height above the plinth, with no mount (Rakesh's call; see "Rejected AI suggestions"). Hero shots frame the garment, so the gap below it falls out of frame there.
+- **Revision (2026-09-25, Rakesh):** the wide shot holds 7.5 s instead of 3.5 s before the first hero shot, and all three costumes turn slowly and together while it holds (0.15 rad/s, about one turn in 40 s; explore turns at 0.25). The loop is now about 40 s.
+  - **Why:** the first seconds are the passer-by's first look; they should take in all three, calmly, before the camera picks one.
+  - Changes of pace glide (a 1 s time constant), and a costume already turning is never reset to rest. Before, starting the wide shot stopped every turntable with a small jolt and eased it up again, and the last-explored costume waited 3 s before turning at all. On first load the turntables ease up from rest.
+  - **Rejected:** a longer wide shot only on the first pass. Every return to the wide shot is a new passer-by's first look.
+- **Revision (2026-09-25, Rakesh):** every attract loop starts from the same place. Whenever the camera travels back to the wide shot (at the end of each loop, and on the idle return after a visitor), every costume turns back to its first position (`yawOffset`, the angle it loads at), the shortest way, over the same 2.2 s, then stands still until all three set off turning together.
+  - **Why:** the loop is the exhibition's opening sequence; like a film, it should play the same every time and never carry on from where the last visitor left a costume.
+  - The turn back is eased (sine) and at most half a turn. The costumes hidden during explore keep turning while hidden, so they need it as much as the one the visitor turned.
+  - **Considered:** snapping the hidden costumes back to their first positions out of sight instead of turning them. Kept the turn for all three, so the reset reads as one movement as they come back into view. (Switching no longer depends on where a hidden costume stands: it's set out of sight on arrival; see Transitions.)
 
 ## Explore view (revision to steps 5–6, 2026-09-25)
 - **Decision (Rakesh's idea):** the story panel is a column at the inline end in **both** orientations, with the costume beside it.
@@ -132,6 +140,16 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
   - **Why:** the brief asks for "a connected story transition", and that "a close-up should feel like leaning in". Growing from the exact spot makes the image the insert shot of that detail.
   - **Rejected:** a crossfade or a plain slide-in, which reads as a page swap.
 - **Decision:** switching costume, the arriving costume keeps turning the way it was going and settles facing front as the camera lands (never more than one turn). The first view of every costume is its front.
+  - **Revision (2026-09-25, Rakesh: "the rotation of the selected costume only works sometimes"):** measured over eight switches, the arrival turn ranged from 0.97 to 5.51 rad in the same 1.6 s (from barely moving to a near-full whirl), because a hidden costume's angle was wherever it had drifted. Then it stood dead still for 3 s every time, since arriving counted as a touch.
+    - Now a costume arriving from a switch (it was hidden) is set out of sight to exactly 60° (1.05 rad) before its front and turns forward onto it: the same gentle arrival every time. From the attract state it's already in view, so it takes the shorter way to its front instead.
+    - It goes straight into its slow turn when it lands, no 3 s pause: the arrival was a move, not a touch.
+    - A drag that starts while the camera is still moving used to be ignored for its whole length. It still does nothing during the move (input stays locked), but if the finger is still dragging when the move lands, the turntable takes it from there. It never counts as a tap.
+    - **Rejected:** keeping the next-front rule and just shortening long turns (still a different arrival every time).
+  - **Revision (2026-09-25, Rakesh: "the model suddenly appears and the camera moves"):** frame by frame, the arriving costume switched on in the first frame at its "dark" level, already visible at the frame edge (a neighbour's edge sits inside the explore framing), and lit to full while the camera had barely moved; the costume left behind was switched off at the end while its edge was still in frame.
+    - **Cause (a bug since step 2):** "going dark" only ever dimmed the key light. three.js ignores a material's `envMapIntensity` when the light comes from `scene.environment`, so the room fill never dimmed. Fixed by giving each costume's materials the environment as their own `envMap` (measured: the same pixel as before when lit, black at 0).
+    - **Now a light cross-fade:** the costume the camera leaves fades out as it goes (1.1 s); the next one comes up as the camera lands (from 0.4 s, 1.2 s). Below light level 0.1 a costume's fill goes out and it dissolves into the stage colour (a small mix added at the end of its shader, a uniform, no recompile), so at 0 every pixel is exactly the stage colour: measured (11, 11, 12) on the arriving dress at the start of a switch. Showing and hiding happen at 0, so neither is ever seen.
+    - Levels of 0.1 and above look exactly as before, so the attract state's dimmed neighbours (0.1) still read as a gallery. The idle return now brings the hidden costumes up out of the dark too.
+    - **Rejected:** keeping all three costumes visible in explore so nothing ever needs showing (the neighbour at the frame edge would be drawn in full every frame; the armour alone is 450k triangles on the iPad 5); fading with material opacity (switching `transparent` recompiles shaders, and a see-through scan shows its own inside).
 - **Decision:** first-reveal bloom. The first time a back hotspot turns into view during a visit, its ring swells and fades twice in the accent colour. Never again for that visitor; the idle reset clears it.
   - **Why:** "reward curiosity". Turning the costume round is the behaviour the brief wants to encourage, so it gets a moment the first time it pays off.
 
@@ -153,8 +171,22 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
 - **Decision:** stage light without extra lights. A warm glow on a backdrop behind each costume separates dark silk and steel from the black (a rim light's job), and a pool of light on the floor around each plinth grounds it. Both are unlit gradients, added on top, and they follow the costume's light level (dark costumes lose their glow).
   - **Rejected:** a rim spot light per costume. Every pixel would pay for three more lights; the iPad 5 is the worst case.
 - **Decision (Rakesh to confirm by eye):** tone mapping **Neutral** (Khronos PBR Neutral) instead of AgX. Neutral keeps base colours close to the scan and only compresses the brightest highlights. AgX desaturated the rose silk. `?tone=agx` switches for comparison.
-- **Open:** hotspot labels are 34 px semibold on a solid plate. Rakesh to test at 1.5 m with a tape measure.
+- **Open:** hotspot labels are 34 px semibold on a solid plate. Rakesh to test at 1.5 m with a tape measure. *(Superseded: 28 px medium on the image, no plate. See "Visual changes after step 10".)*
 - **Open (copy):** several chapters run 4–5 lines at iPad widths; the brief says "about 2 lines each". Trim in the copy pass, which also gives the image back its full share.
+
+## Visual changes after step 10 (Rakesh's review, 2026-09-25)
+- **Decision:** depth instead of a backdrop (`stage/atmosphere.js`). Each costume stands in a shaft of light falling through haze, with dust drifting in it, and seven faint shafts stand 7–30 m back in the dark, fainter with distance.
+  - **Why:** the glow panel behind each costume read as a lit wall; in the wide shot the three joined into a band standing on a floor. Now nothing behind the costumes is a surface. The far shafts drift slower than the costumes when the camera moves (parallax), which is what reads as depth.
+  - Only the far half of each shaft is drawn, so the haze sits behind the costume and never veils it; it still lifts dark silk and steel off the black (the job of the old glow, and of a rim light).
+  - Dust close to the camera draws larger and fainter, like dust out of focus near a lens, so a push-in never fills the frame with bright specks.
+  - Unlit and additive, no real lights (no shader recompiles), about 7 + 3 cone meshes and 270 points.
+  - **Revision (2026-09-25, Rakesh: "some spot light is falling on the backdrop, too distracting"):** the haze was brightest from 0.5 to 1.2 m, right behind the costume's body, so it read as a spotlight on a wall. Now the shaft is narrower (0.75 m at the floor, was 0.95), about 25% fainter, and its haze starts above the costume (from ~0.9 m, full by ~2.2 m), so the space directly behind the garment stays dark and the costume stands in front of depth. The floor pool stays, to ground it; the distant shafts are 30% fainter.
+  - **Rejected:** pools of light on the floor under the distant shafts. From 10–30 m a floor pool is seen almost edge-on and flattens into a horizontal streak that reads as a shelf, the wall problem again. **Rejected:** real volumetric fog (ray-marched), too heavy for the iPad 5.
+- **Decision:** cinematic hotspot labels. Type on the image like a film title, no plate: 28 px medium with a soft dark halo, joined to the ring by a 1 px hairline. The ring is finer (24 px, 2 px stroke, a point at its centre); the touch target stays 60 px.
+  - **Why:** Rakesh found the 34 px semibold labels on solid plates too big and distracting; they competed with the costume they were meant to point at.
+  - **Choreographed, not always on:** arriving at a costume, the rings come in one after another, then each hairline draws out and its label slides in from the ring. A label draws out only once its detail faces the visitor (facing above 0.6) and draws back as it turns away (below 0.45; the gap stops flicker), while the ring stays as the invitation. So only what can be seen is named, and turning the costume keeps revealing names.
+  - **Legibility trade-off:** 28 px capitals are about 3.7 mm, about 8.5 arcminutes at 1.5 m (32 px was about 10). Medium weight and the halo keep the edges crisp on silk. The 1.5 m tape-measure test is still Rakesh's to do; raise `--text-label` if it fails.
+  - **Rejected:** keeping the plates at a smaller size (still boxes on the costume); hiding labels until a ring is tapped (the brief wants labels readable at 1.5 m, and the name is what invites the tap).
 
 ## Performance
 - **Decision:** keep about 40 fps or better on Rakesh's older test iPad, and 60 fps on a current iPad.
@@ -235,6 +267,7 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
 
 ## Legibility
 - **Open:** hotspot label size. On an iPad, 1 CSS px is about 0.19 mm, so a 32 px label has capitals about 4.3 mm tall. At 1.5 m that's about 10 arcminutes, the 20/40 line on an eye chart: readable, but only just. Test 36–40 px semibold at 1.5 m with a tape measure and log the result here.
+- **Changed (2026-09-25):** labels are now 28 px medium on the image (capitals about 3.7 mm, about 8.5 arcminutes at 1.5 m), because the larger plated labels distracted from the costume. The tape-measure test still decides the final size.
 
 ## Creative extra
 - **Decision:** guided hotspot tour, ordered front → side → back so it ends on the hidden detail.
@@ -246,7 +279,7 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
     - Sketch-to-finished comparison: extra assets per hotspot.
 
 ## Your call
-- **Hotspot style:** a hollow ring, so the detail stays visible through it. The label sits on the outward side, away from the garment, on a short leader line. Opacity fades with the angle to the camera.
+- **Hotspot style:** a hollow ring, so the detail stays visible through it. The label sits on the outward side, away from the garment, on a hairline leader, as type on the image with no plate. Opacity fades with the angle to the camera, and a label draws out only while its detail faces the visitor.
   - **Rejected:** solid pins, which cover the detail; binary show/hide, which pops.
 - **Long-story behaviour:** three short chapters tapped through, with no scrolling.
   - **Rejected:** a scrolling panel. Scrolling fights the touch lock and reads badly at 1.5 m.
@@ -291,4 +324,8 @@ Arabic-specific type:
   - **Why rejected:** Rakesh removed it after seeing it on the iPad. The costume floats at its real height, like an invisible mannequin; the hero framing already keeps the gap out of the shot.
 - **2026-09-25: Fill the National Costume's cape scan hole in Blender** (Fill Holes), since the attract hero shot shows it clearly.
   - **Why rejected:** Rakesh chose to leave the scan as it is.
+- **2026-09-25: A warm glow on a backdrop behind each costume** (step 10), to separate dark garments from the black without extra lights.
+  - **Why rejected:** Rakesh saw it read as a wall behind the costumes. Replaced by shafts of light through haze and distant lights that recede into the dark ("Visual changes after step 10").
+- **2026-09-25: Hotspot labels at 34 px semibold on solid plates** (step 10), chosen for reading at 1.5 m over busy silk.
+  - **Why rejected, on design grounds:** Rakesh found them too big and distracting: boxes on the costume that competed with the detail they point to. Replaced by cinematic labels, type on the image with a halo, drawn out only while the detail faces the visitor.
 - *(Log more as they happen: the suggestion, why it was rejected, and the date.)*

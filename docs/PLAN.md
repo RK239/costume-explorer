@@ -183,6 +183,17 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 - [x] Tone mapping: Neutral by default (`?tone=agx` to compare). Rakesh to confirm by eye.
 - [ ] Copy: several chapters run 4–5 lines; the brief says "about 2 lines each". Trim in Rakesh's copy pass.
 
+## Rakesh's changes after step 10
+- [x] Depth instead of a backdrop wall: shafts of light through haze, drifting dust, distant shafts receding into the dark (`stage/atmosphere.js`).
+- [x] Cinematic hotspot labels: type on the image with a halo, hairline leaders, finer rings; labels draw out when the detail faces the visitor.
+- [x] Error pass: every flow run in the browser (attract, enter, all 8 stories and chapters, switching, idle reset), no console errors. Fixed an undefined GLSL `smoothstep` and the dust's pixel ratio.
+- [x] Attract: the wide shot holds 7.5 s with all three turning slowly together, then the hero shots; changes of turntable pace glide instead of jolting.
+- [x] Attract: every loop starts from the costumes' first positions; they turn back while the camera returns to the wide shot (end of each loop, and the idle return).
+- [x] Switching: every arrival turns the same gentle 60° onto the costume's front and goes straight into its slow turn (was 0.97–5.51 rad, then a 3 s dead stop); a drag started mid-move takes over when the move lands.
+- [x] Switching is a light cross-fade: the costume the camera leaves fades out, the next comes up out of the dark as the camera lands; nothing pops in or out (fixed "going dark" never dimming the room fill).
+- [x] Less light behind the costumes: the haze sits above them, narrower and fainter, so the space right behind each garment stays dark.
+- [ ] More changes from Rakesh.
+
 ## 11. Arabic and RTL (~1 h)
 - [ ] Language toggle: one tap, always reachable. It sets `dir="rtl"` and `lang`.
 - [ ] Apply the RTL overrides from DECISIONS.md, including mirroring the lens shift direction.

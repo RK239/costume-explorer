@@ -12,7 +12,8 @@ import { MOTION } from '../motion.js';
 // A tap enters the costume in the hero shot (or, in the wide shot, the one nearest the touch).
 
 const MOVE = MOTION.glide.duration; // s, camera move between shots
-const WIDE_HOLD = 3.5;     // s on the wide shot
+const WIDE_HOLD = 7.5;     // s on the wide shot: time to take in all three before the first close-up
+const DRIFT = 0.15;        // rad/s: the attract state's slow turn, about one turn in 40 s (explore turns at 0.25)
 const TURN = 3.2;          // s for each half turn of the hero (front → back, back → front)
 const BACK_HOLD = 1.6;     // s the hero pauses with its back to the visitor
 const DIM = 0.1;           // light level of the costumes that aren't the hero
@@ -60,6 +61,7 @@ export function createAttract({ overlay, content, rigs, stage, director, turntab
   let stepIndex = 0;
   let current = null; // the running step's timeline
   let hero = null;    // index of the costume in the hero shot, if any
+  const drift = { speed: DRIFT, wait: false };
 
   function playStep(k, { skipMove = false } = {}) {
     stepIndex = k % steps.length;
@@ -69,10 +71,18 @@ export function createAttract({ overlay, content, rigs, stage, director, turntab
 
     if (step === 'wide') {
       hero = null;
-      rigs.forEach((rig, i) => turntables.free(i)); // all three turn, out of sync
-      if (!skipMove) timeline.add(director.glide(director.wideShot(), MOVE), 0);
+      // The loop starts again from the same place: while the camera travels back to the wide
+      // shot, every costume turns back to its first position. (Arriving from explore or at
+      // start-up, toAttract has already done this, or they're there already.)
+      const hold = skipMove ? 0 : MOVE;
+      if (!skipMove) {
+        timeline.add(director.glide(director.wideShot(), MOVE), 0);
+        director.turnHome(timeline, 0);
+      }
+      // Then all three turn slowly together from there.
+      timeline.call(() => rigs.forEach((rig, i) => turntables.free(i, drift)), null, hold);
       rigs.forEach((rig) => timeline.add(lightTo(rig, director.attractGlow, 1.6), 0.3));
-      timeline.to({}, { duration: WIDE_HOLD }, skipMove ? 0 : MOVE);
+      timeline.to({}, { duration: WIDE_HOLD }, hold);
       return;
     }
 
@@ -89,7 +99,7 @@ export function createAttract({ overlay, content, rigs, stage, director, turntab
     timeline.to(turntable, { y: front, duration: MOVE, ease: 'power2.inOut' }, 0);
     timeline.to(turntable, { y: front + Math.PI, duration: TURN, ease: 'power1.inOut' }, MOVE);
     timeline.to(turntable, { y: front + Math.PI * 2, duration: TURN, ease: 'power1.inOut' }, MOVE + TURN + BACK_HOLD);
-    timeline.call(() => turntables.free(step), null, MOVE + 2 * TURN + BACK_HOLD);
+    timeline.call(() => turntables.free(step, drift), null, MOVE + 2 * TURN + BACK_HOLD);
   }
 
   function start() {

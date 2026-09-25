@@ -26,7 +26,7 @@
   --text-attract-invite: clamp(20px, 2.8vmin, 30px);
   --text-costume-title: clamp(30px, 4.4vmin, 46px);     /* 1.5 m */
   --text-costume-context: clamp(16px, 2.1vmin, 21px);
-  --text-label: 34px;                                    /* hotspot labels, 1.5 m (see DECISIONS: Legibility) */
+  --text-label: 28px;                                    /* hotspot labels, medium, no plate (DECISIONS: Legibility) */
   --text-panel-title: 32px;
   --text-body: 21px;
   --text-small: 15px;
@@ -39,14 +39,16 @@
   --radius: 14px;
   --radius-small: 8px;
   --shadow: 0 24px 64px rgb(0 0 0 / 0.55);
+  /* A soft dark halo instead of a plate: type on the image, like a film title, still readable on silk. */
+  --halo: 0 1px 2px rgb(0 0 0 / 0.9), 0 0 12px rgb(0 0 0 / 0.7), 0 0 30px rgb(0 0 0 / 0.55);
 
   /* Attract state */
   --attract-inline: min(35vw, 480px);
 
   /* Hotspots */
   --hotspot-hit: 60px;                  /* touch target (brief: at least 44 px) */
-  --hotspot-ring: 26px;                 /* hollow ring, so the detail shows through it */
-  --leader: 21px;                       /* hairline from the ring's edge to its label */
+  --hotspot-ring: 24px;                 /* fine hollow ring with a point at its centre; the detail shows through */
+  --label-offset: 58px;                 /* ring centre to the label's near edge; a hairline spans most of it (read by hotspots.js) */
 
   /* Story panel: a column at the inline end in both orientations, beside the costume. */
   --panel-inline: min(40vw, 480px);

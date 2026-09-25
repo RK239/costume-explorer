@@ -1,4 +1,4 @@
-import { lightTo } from './costumes.js';
+import { setLight } from './costumes.js';
 
 // Selector thumbnails, rendered from the costumes themselves at load: always in step with the
 // models, no image files to maintain. Rendering each costume once here also uploads its textures
@@ -25,11 +25,14 @@ export function captureThumbnails({ stage, rigs, director }) {
   const ctx = out.getContext('2d');
 
   const saved = rigs.map((rig) => ({ visible: rig.turntable.visible, rotation: rig.turntable.rotation.y }));
+  // Only the costume and its own shaft of light: no neighbours, no distant lights.
+  const distance = scene.getObjectByName('distance');
+  distance.visible = false;
 
   const urls = rigs.map((rig, i) => {
-    rigs.forEach((r, j) => { r.turntable.visible = j === i; });
+    rigs.forEach((r, j) => { r.turntable.visible = r.air.visible = j === i; });
     rig.turntable.rotation.y = ANGLE;
-    lightTo(rig, 1, 0);
+    setLight(rig, 1);
     director.cut(director.frameCostume(rig, region));
     director.update();
     camera.updateMatrixWorld();
@@ -42,7 +45,9 @@ export function captureThumbnails({ stage, rigs, director }) {
 
   rigs.forEach((rig, i) => {
     rig.turntable.visible = saved[i].visible;
+    rig.air.visible = true;
     rig.turntable.rotation.y = saved[i].rotation;
   });
+  distance.visible = true;
   return urls; // the attract state sets lights and camera for the first real frame
 }

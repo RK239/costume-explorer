@@ -70,7 +70,7 @@ button {
   flex: none;
   inline-size: 30px;
   block-size: 30px;
-  border: 3px solid var(--accent);
+  border: 2px solid var(--accent);
   border-radius: 50%;
 }
 
@@ -95,12 +95,12 @@ button {
 }
 
 .teaser__ring {
-  border: 2.5px solid var(--ink);
-  box-shadow: 0 0 0 1.5px rgb(0 0 0 / 0.5), inset 0 0 0 1.5px rgb(0 0 0 / 0.5);
+  border: 2px solid var(--ink);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.35), inset 0 0 0 1px rgb(0 0 0 / 0.35), 0 0 12px rgb(0 0 0 / 0.5);
 }
 
 .teaser__pulse {
-  border: 2px solid var(--accent);
+  border: 1.5px solid var(--accent);
 }
 
 /* ── Costume title card (explore) ─────────────────────────────────── */
@@ -161,17 +161,30 @@ button {
   will-change: transform, opacity;
 }
 
-/* A hollow ring, so the detail it marks stays visible through it. The dark outline keeps it
-   readable on light silk and on polished steel alike. */
+/* A fine hollow ring with a point at its centre, so the detail it marks stays visible through it.
+   The dark halo keeps it readable on light silk and on polished steel alike. */
 .hotspot__ring {
   position: absolute;
   inset: calc((var(--hotspot-hit) - var(--hotspot-ring)) / 2);
-  border: 2.5px solid var(--ink);
+  border: 2px solid var(--ink);
   border-radius: 50%;
   box-shadow:
-    0 0 0 1.5px rgb(0 0 0 / 0.5),
-    inset 0 0 0 1.5px rgb(0 0 0 / 0.5),
-    0 2px 12px rgb(0 0 0 / 0.35);
+    0 0 0 1px rgb(0 0 0 / 0.35),
+    inset 0 0 0 1px rgb(0 0 0 / 0.35),
+    0 0 12px rgb(0 0 0 / 0.5);
+}
+
+.hotspot__ring::after,
+.teaser__ring::after {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  inline-size: 4px;
+  block-size: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.35);
 }
 
 /* Seen: the ring fills with the costume's accent once its story has been opened. */
@@ -183,45 +196,53 @@ button {
 .hotspot__bloom {
   position: absolute;
   inset: calc((var(--hotspot-hit) - var(--hotspot-ring)) / 2);
-  border: 2px solid var(--accent);
+  border: 1.5px solid var(--accent);
   border-radius: 50%;
   visibility: hidden;
   pointer-events: none;
 }
 
-/* The label on a solid plate, joined to the ring by a short leader line. */
-.hotspot__label {
+/* The label: type on the image with a soft halo, no plate, joined to the ring by a hairline.
+   Both start hidden; hotspots.js draws the line out and brings the label in when the detail
+   faces the visitor, and takes them back as it turns away. */
+.hotspot__leader {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
-  padding: 8px 16px;
-  white-space: nowrap;
-  font-size: var(--text-label);
-  font-weight: var(--weight-bold);
-  line-height: 1.15;
-  color: var(--ink);
-  background: var(--plate);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-small);
-  box-shadow: 0 6px 24px rgb(0 0 0 / 0.4);
+  inline-size: calc(var(--label-offset) - var(--hotspot-ring) / 2 - 12px);
+  block-size: 1px;
+  background: rgb(242 239 233 / 0.8);
+  box-shadow: 0 0 6px rgb(0 0 0 / 0.6);
+  transform: scaleX(0);
 }
 
-.hotspot__label::before {
-  content: "";
+.hotspot__label {
   position: absolute;
-  top: 50%;
-  inline-size: var(--leader);
-  block-size: 2px;
-  margin-block-start: -1px;
-  background: var(--ink);
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: var(--text-label);
+  font-weight: var(--weight-medium);
+  line-height: 1.15;
+  color: var(--ink);
+  text-shadow: var(--halo);
+  visibility: hidden;
+  opacity: 0;
 }
 
 /* Label side follows the garment, not the language (DECISIONS.md), so it's physical on purpose.
-   The 4 px offset matches LABEL_GAP in hotspots.js; with the ring's inset it makes the leader. */
-.hotspot.is-left .hotspot__label { right: calc(100% + 4px); }
-.hotspot.is-left .hotspot__label::before { left: 100%; }
-.hotspot.is-right .hotspot__label { left: calc(100% + 4px); }
-.hotspot.is-right .hotspot__label::before { right: 100%; }
+   The hairline leaves 6 px either side: after the ring, before the text. */
+.hotspot.is-left .hotspot__leader {
+  right: calc(50% + var(--hotspot-ring) / 2 + 6px);
+  transform-origin: right center;
+}
+.hotspot.is-left .hotspot__label { right: calc(50% + var(--label-offset)); }
+.hotspot.is-right .hotspot__leader {
+  left: calc(50% + var(--hotspot-ring) / 2 + 6px);
+  transform-origin: left center;
+}
+.hotspot.is-right .hotspot__label { left: calc(50% + var(--label-offset)); }
 
 /* ── Story panel ──────────────────────────────────────────────────── */
 

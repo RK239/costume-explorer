@@ -44,7 +44,7 @@ Decisions log: docs/DECISIONS.md
   - Push-ins stop at a medium shot. Extreme close-ups are the story images.
 - Hotspots:
   - 56–64 px markers (44 px is the minimum)
-  - labels 32 px or larger on a solid plate
+  - labels 28 px medium or larger, on the image with a soft dark halo (no plate; see DECISIONS: Visual changes after step 10)
   - labels offset outward, away from the garment
   - opacity fades with the angle to the camera
 - After 45 s with no touch, go to the attract state and reset the story, seen state and language. The `?idle=5` flag shortens the timer for testing.
