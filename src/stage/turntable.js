@@ -29,8 +29,11 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
   let lastTouch = -Infinity;
   let spinning = false;
 
-  // Only explore mode turns the costume, and never while the director is moving or holding it.
-  const canTurn = () => !director.locked && state.mode === 'explore' && !held.has(state.focus);
+  // The costume turns while exploring and while a story is open (so the visitor can look for the
+  // next detail as they read), never while the director is moving or holding it.
+  const canTurn = () => !director.locked && (state.mode === 'explore' || state.mode === 'story')
+    && !held.has(state.focus);
+  const grabListeners = [];
 
   // Touching a spinning turntable catches it, like putting a hand on a real one.
   function takeHold() {
@@ -38,6 +41,7 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
     const m = motion[state.focus];
     m.velocity = 0;
     m.auto = 0;
+    for (const listener of grabListeners) listener();
   }
 
   canvas.addEventListener('pointerdown', (event) => {
@@ -114,7 +118,11 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
       if (touched && drag?.turns) return; // the finger is in charge
 
       m.velocity *= Math.exp(-DAMPING * dt);
-      if (!touched || sinceTouch > AUTO_DELAY) m.auto = Math.min(1, m.auto + dt / AUTO_RAMP);
+      // While a story is open the costume stays where the visitor leaves it: auto-rotate winds
+      // down instead of up (a flick still carries on and settles).
+      const reading = i === state.focus && state.mode === 'story';
+      if (reading) m.auto = Math.max(0, m.auto - dt / AUTO_RAMP);
+      else if (!touched || sinceTouch > AUTO_DELAY) m.auto = Math.min(1, m.auto + dt / AUTO_RAMP);
       m.rate += (m.speed - m.rate) * Math.min(1, dt / SPEED_GLIDE);
 
       const ease = m.auto * m.auto * (3 - 2 * m.auto); // smoothstep: eases up to speed, no jump
@@ -148,6 +156,7 @@ export function createTurntables({ rigs, canvas, overlay, director }) {
     hold,
     free,
     onTap: (listener) => tapListeners.push(listener),
+    onGrab: (listener) => grabListeners.push(listener), // a finger takes a turntable
     get spinning() { return spinning; },
   };
 }

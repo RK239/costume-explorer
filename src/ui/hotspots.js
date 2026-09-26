@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { state } from '../state.js';
-import { t } from './i18n.js';
+import { t, onLanguage } from './i18n.js';
 import { MOTION } from '../motion.js';
 
 // Hotspot markers: buttons in the overlay that follow a point on the costume every frame.
@@ -58,6 +58,14 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
     return marker;
   }));
 
+  onLanguage(() => {
+    for (const marker of markers) {
+      marker.el.setAttribute('aria-label', t(marker.data.label));
+      marker.label.textContent = t(marker.data.label);
+      marker.labelWidth = 0; // measured again the next time it shows
+    }
+  });
+
   const world = new THREE.Vector3();
   const ndc = new THREE.Vector3();
   const axis = new THREE.Vector3();
@@ -66,6 +74,7 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
   const quaternion = new THREE.Quaternion();
 
   let layerShown = false;
+  let panelRect = () => ({ left: 0, top: 0, width: 0, height: 0 });
   // Back hotspots that have bloomed this visit. The first time one turns into view it blooms
   // once: the reward for turning the costume. Cleared with the seen state on idle reset.
   const bloomed = new Set();
@@ -88,23 +97,33 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
           { scale: 1, autoAlpha: 1, ...MOTION.ringIn, stagger: STAGGER, overwrite: true });
       }
     }
-    // Labels only while exploring, and not during a fast spin. In a story only the ring stays:
-    // the panel's title already names the detail.
-    const labelsAllowed = !turntables.spinning && state.mode === 'explore';
+    // Markers and labels show while exploring and while a story is open (the visitor can turn the
+    // costume and go to the next detail as they read), not during a fast spin. The detail being
+    // read keeps only its ring: the panel's title already names it.
+    const reading = state.mode === 'story';
+    const live = state.mode === 'explore' || reading;
+    const labelsAllowed = !turntables.spinning && live;
     let revealed = 0; // labels drawn out this frame, staggered so they don't all land at once
 
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
+    // Labels keep clear of the screen edges and, in a story, of the panel.
+    let minX = EDGE;
+    let maxX = width - EDGE;
+    if (reading) {
+      const panel = panelRect();
+      if (document.documentElement.dir === 'rtl') minX = Math.max(minX, panel.left + panel.width + EDGE);
+      else maxX = Math.min(maxX, panel.left - EDGE);
+    }
     focus.turntable.getWorldQuaternion(quaternion);
 
     for (const marker of markers) {
-      // Only the focused costume's markers; in a story, only the one being read.
-      const active = marker.rig === focus
-        && (state.mode !== 'story' || state.story?.hotspot === marker.data);
-      if (!active) {
+      // Only the focused costume's markers.
+      if (marker.rig !== focus) {
         hide(marker);
         continue;
       }
+      const current = reading && state.story?.hotspot === marker.data;
 
       world.copy(marker.position);
       focus.turntable.localToWorld(world);
@@ -120,11 +139,11 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
       normal.copy(marker.normal).applyQuaternion(quaternion);
       toCamera.copy(camera.position).sub(world).normalize();
       const dot = normal.dot(toCamera);
-      const facing = smoothstep(FACING_START, FACING_END, dot);
-      const opacity = state.mode === 'story' ? 1 : facing;
+      const opacity = smoothstep(FACING_START, FACING_END, dot);
+      marker.opacity = opacity;
       // The ring shows well before the label: the label draws out only once the detail faces
       // the visitor, and draws back as it turns away, so only what can be seen is named.
-      const wantLabel = labelsAllowed && dot > (marker.labelOn ? LABEL_OFF : LABEL_ON);
+      let wantLabel = labelsAllowed && !current && dot > (marker.labelOn ? LABEL_OFF : LABEL_ON);
 
       // Label on the outward side: left of the costume's axis on screen → label goes left.
       // Physical left/right on purpose: labels follow the garment, not the reading direction.
@@ -138,8 +157,13 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
       if (side === 'left' && x > axisX + SIDE_DEAD_ZONE) side = 'right';
       else if (side === 'right' && x < axisX - SIDE_DEAD_ZONE) side = 'left';
       const reach = labelOffset + marker.labelWidth;
-      if (side === 'left' && x - reach < EDGE) side = 'right';
-      else if (side === 'right' && x + reach > width - EDGE) side = 'left';
+      const fitsLeft = x - reach >= minX;
+      const fitsRight = x + reach <= maxX;
+      if (side === 'left' && !fitsLeft && fitsRight) side = 'right';
+      else if (side === 'right' && !fitsRight && fitsLeft) side = 'left';
+      // No room on either side (in a story, between the panel and the screen edge): the ring
+      // shows alone, and its label draws out once the costume turns it into the clear.
+      if (!(side === 'left' ? fitsLeft : fitsRight)) wantLabel = false;
       if (side !== marker.side) {
         const flipping = marker.side !== '';
         marker.side = side;
@@ -153,7 +177,7 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
         else conceal(marker);
       }
 
-      if (marker.data.side === 'back' && state.mode === 'explore' && opacity >= TAPPABLE && !bloomed.has(marker.key)) {
+      if (marker.data.side === 'back' && live && opacity >= TAPPABLE && !bloomed.has(marker.key)) {
         bloomed.add(marker.key);
         gsap.fromTo(marker.bloom,
           { scale: 1, autoAlpha: 0.95 },
@@ -163,12 +187,13 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
       const style = marker.el.style;
       style.visibility = opacity > 0.01 ? 'visible' : 'hidden';
       style.opacity = opacity.toFixed(3);
-      style.pointerEvents = opacity >= TAPPABLE && state.mode === 'explore' ? 'auto' : 'none';
+      style.pointerEvents = opacity >= TAPPABLE && live ? 'auto' : 'none';
       style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
     }
   }
 
   function hide(marker) {
+    marker.opacity = 0;
     marker.el.style.visibility = 'hidden';
     marker.el.style.pointerEvents = 'none';
     if (marker.labelOn) conceal(marker, { instant: true });
@@ -229,7 +254,15 @@ export function createHotspots({ overlay, rigs, camera, canvas, turntables, onOp
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   }
 
-  return { update, markSeen, resetSeen, screenPosition, project };
+  // How visible a hotspot's ring is right now (0–1): the story's line fades with it.
+  function visibility(rig, data) {
+    return markers.find((m) => m.rig === rig && m.data === data)?.opacity ?? 0;
+  }
+
+  return {
+    update, markSeen, resetSeen, screenPosition, project, visibility,
+    set panelRect(fn) { panelRect = fn; }, // the story panel's place, supplied by story.js
+  };
 }
 
 function smoothstep(edge0, edge1, x) {

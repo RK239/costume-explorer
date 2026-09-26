@@ -1,6 +1,6 @@
 import gsap from 'gsap';
 import { state } from '../state.js';
-import { t } from './i18n.js';
+import { t, num, onLanguage } from './i18n.js';
 
 // Costume selector: one button per costume, with a thumbnail rendered from the costume itself,
 // always visible while exploring, one tap from any mode. Each shows how many of that costume's
@@ -30,8 +30,9 @@ export function createSelector({ overlay, content, rigs, director, story, thumbn
     button.append(thumb, name, count);
     button.addEventListener('click', () => choose(index));
     nav.append(button);
-    return { button, count, rig };
+    return { button, name, count, rig };
   });
+  onLanguage(() => { for (const item of items) item.name.textContent = t(item.rig.data.shortTitle); });
 
   function choose(index) {
     if (director.locked) return;
@@ -66,7 +67,7 @@ export function createSelector({ overlay, content, rigs, director, story, thumbn
       const total = item.rig.data.hotspots.length;
       const found = [...state.seen].filter((key) => key.startsWith(`${item.rig.id}:`)).length;
       item.complete = found === total;
-      item.count.textContent = t(content.ui.found).replace('{n}', found).replace('{total}', total);
+      item.count.textContent = t(content.ui.found).replace('{n}', num(found)).replace('{total}', num(total));
       item.button.setAttribute('aria-current', String(index === state.focus));
       item.button.classList.toggle('is-complete', item.complete);
     }

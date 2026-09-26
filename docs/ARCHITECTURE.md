@@ -19,7 +19,7 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
 - Camera: a PerspectiveCamera with a vertical FOV around 30° (roughly a 45 mm full-frame vertical equivalent). Rakesh has the final say on the lens.
 
 ## Interaction model: turntable, not orbit
-- A horizontal drag rotates the focused costume's turntable (`rotation.y`). Vertical drag is ignored.
+- A horizontal drag rotates the focused costume's turntable (`rotation.y`), while exploring and during a story. Vertical drag is ignored.
 - Only the first pointer counts; extra touches are ignored. Use `setPointerCapture`.
 - On release, the turntable keeps turning with inertia and damping; clamp the maximum angular velocity.
 - Auto-rotate: a slow constant turn when idle. It resumes about 3 s after the last touch, easing up to speed rather than jumping. Changes of pace glide.
@@ -44,6 +44,7 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
   - Turn the turntable so the hotspot faces the camera. With the hotspot's local yaw `a = atan2(nx, nz)` and the camera's yaw from the costume `c`, the target rotation is `c − a`; wrap the difference to [−π, π] for the shortest turn.
   - At the same time, dolly the camera toward the hotspot's height until `frame` × costume height is visible (`frame` comes from content; 0.5–0.8 is typical).
   - Push-ins stop at a medium shot. The story image is the insert.
+- In a story, the first drag pulls the camera back to the whole costume beside the panel (`storyOverview`). Tapping another ring swaps the story in place and pushes in on the new detail; the panel stays open.
 - Re-run the framing on every `resize` and orientation change. Mid-transition, it re-frames once the move lands.
 
 ## Hotspots
@@ -52,7 +53,7 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
   1. `world = turntable.localToWorld(localPos)`, then `ndc = world.clone().project(camera)`. The projection already includes the lens shift. If `ndc.z > 1`, hide it.
   2. Position the element with `transform: translate3d(x, y, 0)`.
   3. Facing test: rotate the local normal by the turntable's world quaternion, then take `d = dot(normal, normalize(cameraPos − world))`. Set `opacity = smoothstep(0.05, 0.3, d)`. Below 0.5 opacity, turn off pointer events.
-  4. Label side: if the marker is left of the costume's centre on screen, the label goes left; otherwise right. Keep labels clear of the screen edges.
+  4. Label side: if the marker is left of the costume's centre on screen, the label goes left; otherwise right. Keep labels clear of the screen edges and, in a story, of the panel. If a label fits on neither side, the ring shows alone.
 - Optional: raycast occlusion every ~6 frames, only if a hotspot visibly shows through an arm or a fold.
 - Marker: a fine hollow ring with a centre point, so the detail stays visible through it, and the label as type on the image (soft halo, no plate) on a hairline leader. Once opened, the ring fills (seen state).
 - Labels are choreographed: on arrival the rings come in one after another and the labels follow. A label draws out only while its detail faces the camera (with hysteresis) and draws back as it turns away.
@@ -130,10 +131,11 @@ src/
     story.js         panel, chapters, image treatments, connecting line
     selector.js      costume buttons, "n of total found"
     label.js         the costume's title card while exploring
+    home.js          the Home button (under the language button): back to the lineup and the attract loop
     attract.js       attract timeline and headline
     idle.js          45 s timer
     tour.js          guided tour timeline
-    i18n.js          language switch, dir="rtl"
+    i18n.js          t(), num(), setLanguage (lang, dir="rtl", re-renders), the language button
     touch-lock.js    blocks Safari's pinch, scroll, long-press and selection
   styles/
     tokens.css  base.css  ui.css  rtl.css

@@ -196,23 +196,29 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 - [x] Less light behind the costumes: the haze sits above them, narrower and fainter, so the space right behind each garment stays dark.
 - [x] Parade Armour at 4K (sharper etching in push-ins). 6.55 MB, over the 3 MB file budget until the normal bake.
 - [x] National Costume: the hole in the cape's lining patched in Blender with a new piece of lining (`scripts/blender/patch-national-lining.py`); still under 3 MB (2.98).
+- [x] Reading while turning: the costume turns during a story (the first drag pulls back to the whole costume), the other rings and labels show, and a tap on one swaps the story in place without closing the panel.
 - [ ] Rakesh: bake a normal map for the armour (1M original → ~150k mesh) to bring its file down from 6.55 MB (DECISIONS: Models and licences).
 - [ ] Rakesh: re-pose the dress's forearms in Blender (see DECISIONS: Third costume). Then `npm run models`, and Claude places the cuff hotspot again.
 - [ ] Rakesh: check all of it on the iPad (look, and fps against the ~54 before; three real models now load).
 - [ ] More changes from Rakesh.
 
 ## 11. Arabic and RTL (~1 h)
-- [ ] Language toggle: one tap, always reachable. It sets `dir="rtl"` and `lang`.
-- [ ] Apply the RTL overrides from DECISIONS.md, including mirroring the lens shift direction.
-- [ ] Arabic type scale: larger size, more line height, no letter-spacing, no uppercase, no italics.
+- [x] Language toggle: one tap, always reachable (top corner at the inline end). It sets `dir="rtl"` and `lang`, and the switch is a move: words fade, the page flips, the camera re-frames.
+- [x] Apply the RTL overrides from DECISIONS.md, including mirroring the lens shift direction (the panel and headline move left, the costume right; sketch tilt mirrored; labels and stage unchanged).
+- [x] Arabic type scale: IBM Plex Sans Arabic, about 10% larger, more line height, no letter-spacing, no uppercase, no italics. Eastern Arabic digits.
+- [x] Arabic for the interface, the exhibition title, every costume's title and context, and the hotspot labels.
+- [x] The attract loop follows the kiosk's language (all English or all Arabic); Home keeps the visitor's language, the idle reset returns to English.
+- [x] Home button under the language button (they move together): back to the wide shot and the attract loop, keeping the visitor's finds and language.
+- [ ] Arabic for the hotspot chapters and image descriptions, after Rakesh's copy pass.
 - [ ] A native reader proofreads the Arabic, or the README says it wasn't.
 
 ## 12. Guided tour (~30 min)
+*Deferred (2026-09-26, Rakesh): built once the stories are final, since the tour's pacing depends on the copy.*
 - [ ] One timeline that runs the hotspots in `tourOrder` (front → side → back): push-in, chapters, hold, next.
 - [ ] A visible progress ring. A touch pauses the tour; a tap on the ring resumes it.
 - [ ] The idle timer stays paused while the tour plays.
 
-**Commit** (step 10 on its own, as a checkpoint before Rakesh's changes; then steps 11–12)
+**Commit** (step 10 on its own, as a checkpoint before Rakesh's changes; then step 11 on its own, with step 12 deferred)
 
 ---
 

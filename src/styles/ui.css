@@ -44,8 +44,8 @@ button {
   margin: 0;
   font-size: var(--text-attract-title);
   font-weight: var(--weight-bold);
-  line-height: 0.95;
-  letter-spacing: -0.02em; /* optical tightening at display size, not a hierarchy device */
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
 }
 
 .attract__subtitle {
@@ -103,13 +103,66 @@ button {
   border: 1.5px solid var(--accent);
 }
 
+/* ── Language button ──────────────────────────────────────────────── */
+
+/* The top corner at the inline end (right in English, left in Arabic): the language button,
+   with Home under it. One container, so both move together when the page flips. */
+.corner {
+  position: absolute;
+  inset-block-start: 20px;
+  inset-inline-end: var(--edge);
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  gap: 10px;
+  pointer-events: none;
+}
+
+/* One tap, always on screen: above the headline in the attract state and above the story panel
+   in a story. It names the other language in that language. */
+.language,
+.home {
+  min-inline-size: var(--hit);
+  min-block-size: var(--hit);
+  padding: 0 22px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgb(20 20 22 / 0.72);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.language:active,
+.home:active {
+  background: var(--plate-raised);
+}
+
+/* Home: back to the lineup. A house and the word, in the language on screen. */
+.home {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-inline: 18px 22px;
+}
+
+.home svg {
+  inline-size: 24px;
+  block-size: 24px;
+  flex: none;
+}
+
 /* ── Costume title card (explore) ─────────────────────────────────── */
 
 /* Centred in the top band the camera keeps free, above the costume: a museum label. */
 .costume-label {
   position: absolute;
   inset-block-start: 22px;
-  inset-inline: var(--frame-inline);
+  inset-inline: max(var(--frame-inline), var(--corner-clear)); /* clear of the language button */
   text-align: center;
   pointer-events: none;
 }
@@ -128,7 +181,7 @@ button {
   font-size: var(--text-costume-title);
   font-weight: var(--weight-bold);
   line-height: var(--leading-tight);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-title);
 }
 
 .costume-label__context {
@@ -250,7 +303,8 @@ button {
    the insert shot, so text never squeezes it), then the costume, the detail, the chapters. */
 .story {
   position: absolute;
-  inset-block: var(--frame-top) var(--frame-bottom);
+  /* It starts below the language and Home buttons, which share its side. */
+  inset-block: max(var(--frame-top), var(--corner-stack)) var(--frame-bottom);
   inset-inline-end: var(--edge);
   inline-size: var(--panel-inline);
   display: flex;
@@ -394,8 +448,8 @@ button {
   margin: 0;
   font-size: var(--text-panel-title);
   font-weight: var(--weight-bold);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  line-height: var(--leading-panel-title);
+  letter-spacing: var(--tracking-title);
 }
 
 /* Chapters: a row of text tabs; the current one is marked with the accent. */

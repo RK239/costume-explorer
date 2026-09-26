@@ -1,6 +1,6 @@
 import gsap from 'gsap';
 import { state } from '../state.js';
-import { t } from './i18n.js';
+import { t, onLanguage } from './i18n.js';
 
 // The costume's title card, like a museum label: its title and one line of wearer/place context,
 // centred above the costume while exploring. It arrives once the camera has landed on the
@@ -29,14 +29,19 @@ export function createLabel({ overlay, rigs }) {
     shown = show;
     tween?.kill();
     if (show) {
-      const rig = rigs[state.focus];
-      title.textContent = t(rig.data.title);
-      context.textContent = t(rig.data.context);
+      render();
       tween = gsap.fromTo(label, { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power2.out' });
     } else {
       tween = gsap.to(label, { autoAlpha: 0, duration: 0.3, ease: 'power1.in' });
     }
   }
+
+  function render() {
+    const rig = rigs[state.focus];
+    title.textContent = t(rig.data.title);
+    context.textContent = t(rig.data.context);
+  }
+  onLanguage(render);
 
   return { update };
 }

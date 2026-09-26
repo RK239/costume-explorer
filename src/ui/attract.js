@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { state } from '../state.js';
-import { t } from './i18n.js';
+import { t, onLanguage } from './i18n.js';
 import { lightTo } from '../stage/costumes.js';
 import { MOTION } from '../motion.js';
 
@@ -10,6 +10,9 @@ import { MOTION } from '../motion.js';
 // shot, large beside the headline, lit while the others fall dark, turning once to show its
 // back. When the back comes round, a ring pulses on the back hotspot: there's something to find.
 // A tap enters the costume in the hero shot (or, in the wide shot, the one nearest the touch).
+// It speaks the kiosk's language: the whole loop in English, or the whole loop in Arabic, laid out
+// right to left (headline on the left, costume on the right). Home keeps a visitor's language;
+// the idle reset returns to English.
 
 const MOVE = MOTION.glide.duration; // s, camera move between shots
 const WIDE_HOLD = 7.5;     // s on the wide shot: time to take in all three before the first close-up
@@ -32,9 +35,12 @@ export function createAttract({ overlay, content, rigs, stage, director, turntab
     <h1 class="attract__title"></h1>
     <p class="attract__subtitle"></p>
     <p class="attract__invite"><span class="attract__ring" aria-hidden="true"></span><span class="attract__invite-text"></span></p>`;
-  headline.querySelector('.attract__title').textContent = t(content.exhibition.title);
-  headline.querySelector('.attract__subtitle').textContent = t(content.exhibition.subtitle);
-  headline.querySelector('.attract__invite-text').textContent = t(content.ui.touchToBegin);
+  function renderWords() {
+    headline.querySelector('.attract__title').textContent = t(content.exhibition.title);
+    headline.querySelector('.attract__subtitle').textContent = t(content.exhibition.subtitle);
+    headline.querySelector('.attract__invite-text').textContent = t(content.ui.touchToBegin);
+  }
+  renderWords();
   overlay.append(headline);
 
   // The director frames the costume beside the headline, so it needs the headline's place.
@@ -113,6 +119,15 @@ export function createAttract({ overlay, content, rigs, stage, director, turntab
     hero = null;
     rigs.forEach((rig, i) => turntables.free(i));
   }
+
+  // A language switch moves the headline to the other side (and its words change length), so the
+  // camera glides to the same shot framed for the new layout; the loop carries on around it.
+  onLanguage(() => {
+    renderWords();
+    if (state.mode !== 'attract' || !current) return;
+    const target = hero === null ? director.wideShot() : director.heroShot(rigs[hero]);
+    director.glide(target, MOTION.reframe.duration);
+  });
 
   // Rotating the iPad mid-loop: replay the current shot for the new layout.
   stage.onResize(() => {

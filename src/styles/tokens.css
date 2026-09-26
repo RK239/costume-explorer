@@ -15,7 +15,7 @@
   --paper-ink: #3a342d;
 
   /* Type: IBM Plex Sans, with IBM Plex Sans Arabic from the same family for RTL. */
-  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "IBM Plex Sans", "IBM Plex Sans Arabic", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-bold: 600;
@@ -32,6 +32,10 @@
   --text-small: 15px;
   --leading-tight: 1.05;
   --leading-body: 1.5;
+  --leading-display: 0.95;              /* the attract title */
+  --leading-panel-title: 1.1;
+  --tracking-display: -0.02em;          /* optical tightening at display size, never a hierarchy device */
+  --tracking-title: -0.01em;            /* (both 0 in Arabic: spacing breaks its joined letters; rtl.css) */
 
   /* Space, shape and touch */
   --edge: 40px;                         /* distance from the screen edge */
@@ -44,6 +48,11 @@
 
   /* Attract state */
   --attract-inline: min(35vw, 480px);
+
+  /* The top corner at the inline end: the language button with Home under it. Centred text keeps
+     clear of its width; the story panel on that side starts below its height. */
+  --corner-clear: 170px;
+  --corner-stack: 158px;                /* 20 px + two 56 px buttons + 10 px gap + 16 px clear */
 
   /* Hotspots */
   --hotspot-hit: 60px;                  /* touch target (brief: at least 44 px) */

@@ -16,11 +16,15 @@ export const MOTION = {
   lightIn:  { at: 0.4, duration: 1.2, ease: 'power2.inOut' }, // …and the next comes up out of black as the camera lands
   panelIn:  { duration: 0.7, ease: 'power3.out' },
   panelOut: { duration: 0.45, ease: 'power2.in' },
+  swapOut:  { duration: 0.25, ease: 'power1.in' },   // another hotspot in an open story: the words leave…
+  swapIn:   { duration: 0.35, ease: 'power1.out' },  // …and return for the new detail as the camera lands
   grow:     { duration: 0.75, ease: 'power3.inOut' }, // the close-up growing out of the ring
   draw:     { duration: 0.55, ease: 'power2.out' },   // the line from the ring to the panel
   retract:  { duration: 0.25, ease: 'power1.in' },
   bloom:    { duration: 1.1, ease: 'power2.out' },    // a back hotspot's first reveal
   home:     { duration: 2.2, ease: 'sine.inOut' },    // every costume turning back to its first position for a new attract loop
+  language: { out: { duration: 0.3, ease: 'power1.in' }, back: { duration: 0.5, ease: 'power1.out' } }, // words out, page flips, words back
+  reframe:  { duration: 0.9, ease: 'power2.inOut' },  // the camera following a change of layout (a language switch)
   ringIn:   { duration: 0.6, ease: 'power3.out' },    // hotspot rings arriving, one after another
   hairline: { duration: 0.4, ease: 'power2.out' },    // a label's line drawing out from its ring…
   labelIn:  { duration: 0.55, ease: 'power3.out' },   // …and the label settling in after it

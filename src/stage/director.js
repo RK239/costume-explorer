@@ -163,12 +163,44 @@ export function createDirector(stage, rigs) {
     return fit(subject, storyRegion(), centreY);
   }
 
-  // The shot the current mode should hold, used after a resize.
-  function shotForMode() {
-    if (state.mode === 'attract') return wideShot(); // attract.js re-frames its own hero shots
+  // The shot a mode should hold, used after a resize or a language switch.
+  function shotForMode(mode = state.mode) {
+    if (mode === 'attract') return wideShot(); // attract.js re-frames its own hero shots
     const rig = rigs[state.focus];
-    if (state.mode === 'story' && state.story) return detailShot(rig, state.story.hotspot, rig.turntable.rotation.y);
+    if (mode === 'story' && state.story) {
+      return state.story.overview ? frameCostume(rig, storyRegion()) : detailShot(rig, state.story.hotspot, rig.turntable.rotation.y);
+    }
     return frameCostume(rig);
+  }
+
+  // In a story, once the visitor starts turning the costume: the camera eases back from the
+  // detail to the whole costume beside the panel, so they can find the next hotspot as they read.
+  // Not a locked move: their finger is already on the costume.
+  function storyOverview(rig) {
+    return gsap.to(shot, { ...frameCostume(rig, storyRegion()), ...MOTION.reframe, overwrite: 'auto' });
+  }
+
+  // Switching language re-lays the page out: in Arabic the story panel and the attract headline
+  // move to the left, so the costume moves right. The words fade out, the page flips while they're
+  // hidden (`apply`), the camera glides to the mirrored framing, and the words come back. In the
+  // attract state the loop re-frames its own shot, so only the words fade.
+  function toLanguage(apply, words) {
+    const mode = state.mode;
+    const { out, back } = MOTION.language;
+    let target = null;
+    const aim = (key) => (target ??= shotForMode(mode))[key]; // read after the flip
+    const timeline = gsap.timeline();
+    timeline.to(words, { opacity: 0, ...out });
+    timeline.call(apply);
+    if (mode !== 'attract') {
+      timeline.to(shot, {
+        x: () => aim('x'), y: () => aim('y'), z: () => aim('z'),
+        shiftX: () => aim('shiftX'), shiftY: () => aim('shiftY'),
+        ...MOTION.reframe,
+      });
+    }
+    timeline.to(words, { opacity: 1, ...back }, mode === 'attract' ? '+=0.1' : '<0.3');
+    return mode === 'attract' ? timeline : play(timeline, mode);
   }
 
   // Runs a mode change. Input is locked until the timeline finishes; then the new mode starts.
@@ -334,6 +366,8 @@ export function createDirector(stage, rigs) {
     set headlineRect(fn) { headlineRect = fn; },
     attractGlow: ATTRACT_GLOW,
     turnHome,
+    toLanguage,
+    storyOverview,
     freeRegion,
     frameCostume,
     frameLineup,

@@ -335,6 +335,34 @@ Arabic-specific type:
 - No letter-spacing, uppercase or italics.
 - Numerals: decide Western vs Eastern Arabic and log it here.
 
+Built in step 11 (2026-09-26):
+- **Decision:** a language button, one tap, always on screen in the top corner at the inline end (right in English, left in Arabic): above the headline in the attract state, above the story panel in a story. It names the other language in that language ("العربية" / "English"), so a visitor finds their own. Centred titles keep clear of that corner.
+- **Decision:** switching is a move, not a jump: the words fade out, the page flips direction while they're hidden, the camera glides to the mirrored framing (the costume moves to the right of the panel or headline), and the words come back. An open story keeps its chapter. In the attract state the loop carries on and re-frames its current shot. The idle reset switches back to English at once (nobody is looking).
+- **Decision (numerals):** Eastern Arabic digits (٠١٢٣…) in Arabic: dates in the copy and the "found" counts (`num()` in i18n.js). They read as the exhibition's own voice in Arabic; Western digits would be the practical choice for a Maghreb audience.
+- **Decision:** Arabic type is IBM Plex Sans Arabic, the same family as the Latin. Sizes step up about 10% and lines open up (body 1.75, display 1.25) for the letters' dots and marks. The Latin display type's slight negative letter-spacing is a token that is 0 in Arabic: spacing breaks Arabic's joined letters.
+- **Decision:** the Calligraphy Dress's Arabic title is «فستان الحروف», "the dress of letters", not "calligraphy dress". An Arabic reader sees at once that the letters spell nothing; calling it calligraphy would claim what the dress doesn't have.
+- **Decision (Rakesh):** the attract loop speaks the kiosk's language, all of it: an English loop in English, an Arabic loop in Arabic, laid out right to left (headline on the left, the costume on the right). Choosing Arabic in the attract state re-frames the shot on screen for the flipped layout and the loop carries on in Arabic. Home keeps the visitor's language, so a visitor who explored in Arabic returns to an Arabic loop; the idle reset returns the kiosk to English.
+- **Decision (Rakesh):** a Home button under the language button, in the same corner container, so the two move together when the language flips the page. It closes any story, pulls the camera back to the wide shot and hands over to the attract loop, which carries on as usual.
+  - Unlike the idle reset, Home keeps the visitor's finds and their language (they're still standing there), so the loop carries on in that language.
+  - Shown while exploring and in a story; hidden in the attract state, where you're already home. A house and the word, in the language on screen.
+  - The story panel on that side starts below the two buttons (`--corner-stack`); its image yields the height, and every chapter still fits at 10.2".
+- **Kept on purpose:** the hotspot labels stay on the garment's outer side in both languages (they point at the garment, not into the text), and the stage, turntables and camera moves don't mirror.
+- **Open:** the hotspot chapters and image descriptions are still English in Arabic (they wait for Rakesh's copy pass); they're marked `dir="auto"` so they read correctly meanwhile. The Arabic was drafted by Claude; unless a native reader checks it, the README says so.
+  - **Rejected:** machine-mirroring the whole page (the brief asks for an RTL composition designed on purpose); translating the draft chapters now (they're about to be rewritten).
+
+## Reading while turning (2026-09-26)
+- **Decision (Rakesh):** the costume stays in the visitor's hands during a story. They can turn it while they read, and tap the next ring without closing the panel.
+  - **Why:** to go from one detail to the next, a visitor had to close the story, find the ring and open it again. That was a lot of friction for the thing the brief wants most ("inspect every side").
+- **How it works:**
+  - The first drag in a story pulls the camera back to the whole costume beside the panel (`director.storyOverview`), so turning shows the garment, not a close crop. The story stays open.
+  - The other rings and their labels show as the costume turns. The detail being read keeps only its ring: the panel's title already names it.
+  - Tapping another ring swaps the story in place: the text and image fade out, the turntable turns the new detail to the camera and the camera pushes in on it, and the new story fades in with its line and close-up.
+  - Tapping the ring being read, after turning, pushes in on it again.
+  - The slow auto-turn winds down while a story is open, so the detail being read doesn't drift away.
+  - Labels keep clear of the panel as well as the screen edges. Where a label fits on neither side of its ring, the ring shows alone (the ring stays tappable). This happens mostly in portrait, where the gap beside the panel is narrow. The label draws out once the costume turns it into the clear.
+- **Kept (Claude's defaults, 2026-09-26):** a tap on the empty stage still closes the story, and a hotspot still pushes in. The camera only pulls back once the visitor starts turning.
+  - **Rejected:** closing the story to switch hotspots (the friction this removes); dropping the push-in so the costume is always whole (it loses "leaning in", and the brief asks for a reframe on the selected detail); the other rings hidden until the story closes (nothing to find while reading).
+
 ## Out of scope
 - **Camera try-on.** It's not in the brief's creative-extra list, it takes time the core build needs, and it raises camera-privacy questions in a public space. Pitch it in the defence as a next step (headpiece try-on via face tracking).
 
@@ -359,4 +387,6 @@ Arabic-specific type:
   - **Why rejected:** Rakesh saw it read as a wall behind the costumes. Replaced by shafts of light through haze and distant lights that recede into the dark ("Visual changes after step 10").
 - **2026-09-25: Hotspot labels at 34 px semibold on solid plates** (step 10), chosen for reading at 1.5 m over busy silk.
   - **Why rejected, on design grounds:** Rakesh found them too big and distracting: boxes on the costume that competed with the detail they point to. Replaced by cinematic labels, type on the image with a halo, drawn out only while the detail faces the visitor.
+- **2026-09-26: An attract loop that alternates English and Arabic shot by shot** (each shot laid out in its own direction), so a passer-by who reads either is invited even though the idle reset returns the kiosk to English. Claude proposed and built it after Rakesh asked for the hero and wide shots in Arabic.
+  - **Why rejected:** Rakesh: the loop can't mix languages. It follows the kiosk's language: an English loop in English mode, an Arabic loop in Arabic mode.
 - *(Log more as they happen: the suggestion, why it was rejected, and the date.)*

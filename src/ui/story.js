@@ -1,6 +1,6 @@
 import gsap from 'gsap';
 import { state } from '../state.js';
-import { t } from './i18n.js';
+import { t, onLanguage } from './i18n.js';
 import { MOTION } from '../motion.js';
 
 // The story: tapping a hotspot turns the detail to the visitor, pushes the camera in and opens
@@ -39,7 +39,7 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
       <p class="story__costume"></p>
       <h2 class="story__title"></h2>
       <div class="story__tabs" role="tablist"></div>
-      <p class="story__text" role="tabpanel"></p>
+      <p class="story__text" role="tabpanel" dir="auto"></p>
     </div>`;
   overlay.append(panel);
   gsap.set(panel, { autoAlpha: 0 });
@@ -74,9 +74,11 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
 
   // The director frames the costume beside the panel, so it needs the panel's place on screen.
   // offset* values ignore transforms, so this is right even while the panel is slid off-screen.
-  director.panelRect = () => ({
+  const panelBox = () => ({
     left: panel.offsetLeft, top: panel.offsetTop, width: panel.offsetWidth, height: panel.offsetHeight,
   });
+  director.panelRect = panelBox;
+  hotspots.panelRect = panelBox; // their labels keep clear of it
 
   let chapter = 0;
 
@@ -94,6 +96,18 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
     chapter = 0;
     renderChapter(state.story.hotspot);
   }
+
+  onLanguage(() => {
+    if (!state.story) return;
+    const { rig, hotspot } = state.story;
+    closeButton.setAttribute('aria-label', t(content.ui.close));
+    $('.story__costume').textContent = t(rig.data.shortTitle);
+    title.textContent = t(hotspot.label);
+    tabs.forEach((tab, i) => { tab.textContent = t(content.ui.chapters[CHAPTERS[i]]); });
+    pending.textContent = t(content.ui.imagePending);
+    image.alt = hotspot.image?.alt ? t(hotspot.image.alt) : '';
+    renderChapter(hotspot);
+  });
 
   function renderChapter(hotspot) {
     $('.story__text').textContent = t(hotspot[CHAPTERS[chapter]]);
@@ -160,7 +174,9 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
   }
 
   function open(rig, hotspot) {
-    if (director.locked || state.mode !== 'explore') return;
+    if (director.locked) return;
+    if (state.mode === 'story') return switchTo(rig, hotspot);
+    if (state.mode !== 'explore') return;
     state.story = { rig, hotspot };
     hotspots.markSeen(rig, hotspot);
     onSeen?.();
@@ -177,8 +193,50 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
       0.6);
     timeline.fromTo(path, { strokeDashoffset: 1 }, { strokeDashoffset: 0, ...MOTION.draw }, settle - 0.1);
     timeline.add(grow(rig, hotspot), settle - 0.1);
-    return director.play(timeline, 'story');
+    // Once the story has landed, the costume is the visitor's again: they can turn it to find the
+    // next detail while they read (turntable.js keeps it from auto-rotating in a story).
+    return director.play(timeline, 'story').then(() => turntables.free(rig.index, { wait: false }));
   }
+
+  // Another hotspot while a story is open: the story moves in place, no closing. The words and the
+  // image leave, the costume turns the new detail to the visitor as the camera pushes in on it,
+  // and the story returns for it, its image growing out of the new ring as when it first opened.
+  // Tapping the detail being read, after turning away from it, pushes in on it again.
+  function switchTo(rig, hotspot) {
+    const same = hotspot === state.story.hotspot;
+    if (same && !state.story.overview) return undefined;
+    const body = $('.story__body');
+    gsap.killTweensOf(flyer);
+    turntables.hold(rig.index);
+    const timeline = gsap.timeline();
+    timeline.add(director.pushIn(rig, hotspot), 0);
+    if (!same) {
+      timeline.to([body, figure], { autoAlpha: 0, ...MOTION.swapOut }, 0);
+      timeline.to(path, { strokeDashoffset: 1, ...MOTION.retract }, 0);
+      timeline.call(() => {
+        lean?.kill();
+        state.story = { rig, hotspot };
+        hotspots.markSeen(rig, hotspot);
+        onSeen?.();
+        fill(rig, hotspot);
+        // The image grows from the new ring once the words are back (built now: it needs the new image).
+        timeline.add(grow(rig, hotspot), 1.15);
+      }, null, MOTION.swapOut.duration);
+      timeline.to(body, { autoAlpha: 1, ...MOTION.swapIn }, 0.9);
+      timeline.fromTo(path, { strokeDashoffset: 1 }, { strokeDashoffset: 0, ...MOTION.draw }, 1.15);
+    } else {
+      state.story.overview = false;
+    }
+    return director.play(timeline, 'story').then(() => turntables.free(rig.index, { wait: false }));
+  }
+
+  // The first time the visitor turns the costume in a story, the camera eases back from the
+  // detail to the whole costume beside the panel, so the other hotspots are in view.
+  turntables.onGrab(() => {
+    if (state.mode !== 'story' || !state.story || state.story.overview) return;
+    state.story.overview = true;
+    director.storyOverview(state.story.rig);
+  });
 
   // The line retracts and the panel leaves: for folding into another timeline (closing,
   // switching costume, the idle reset).
@@ -224,6 +282,8 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
     const startX = ring.x + Math.cos(angle) * RING_RADIUS;
     const startY = ring.y + Math.sin(angle) * RING_RADIUS;
     path.setAttribute('d', `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`);
+    // The line belongs to the ring: as the visitor turns the detail away, it fades with it.
+    line.style.opacity = hotspots.visibility(state.story.rig, state.story.hotspot).toFixed(3);
   }
 
   return { open, close, closeTimeline, update, get isOpen() { return !!state.story; } };
