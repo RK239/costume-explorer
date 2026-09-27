@@ -28,8 +28,8 @@ export async function startDevTools(overlay) {
   window.addEventListener('unhandledrejection', (event) => status('error', String(event.reason?.message ?? event.reason)));
 
   // Called once the stage exists: console handle and the hotspot tap tool.
-  function attach({ stage, rigs, director, turntables }) {
-    window.dev = { THREE, state, stage, rigs, director, turntables, probe };
+  function attach({ stage, rigs, director, turntables, revolve }) {
+    window.dev = { THREE, state, stage, rigs, director, turntables, revolve, probe };
     status('dev', 'tap a costume to log a hotspot position');
 
     // Console helper for placing hotspots precisely: fire a ray at costume `index` from one side,

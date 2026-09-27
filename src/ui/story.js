@@ -148,16 +148,20 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
       width: frame.offsetWidth,
       height: frame.offsetHeight,
     });
+    // Nothing shows until the growth starts (immediateRender: false): the start is read then, from
+    // where the ring is once the camera has landed, and the copy fades in as it leaves the ring.
     return gsap.timeline()
       .fromTo(flyer, {
         left: () => ring().x - RING_RADIUS, top: () => ring().y - RING_RADIUS,
-        width: RING_RADIUS * 2, height: RING_RADIUS * 2, borderRadius: RING_RADIUS, rotation: 0, autoAlpha: 1,
+        width: RING_RADIUS * 2, height: RING_RADIUS * 2, borderRadius: RING_RADIUS, rotation: 0,
       }, {
         left: () => target().left, top: () => target().top,
         width: () => target().width, height: () => target().height,
         borderRadius: sketch ? 1 : 0, rotation: tilt,
         ...MOTION.grow,
+        immediateRender: false,
       })
+      .fromTo(flyer, { autoAlpha: 0 }, { autoAlpha: 1, ...MOTION.growFade, immediateRender: false }, 0)
       .set(figure, { autoAlpha: 1 })
       .call(() => startLean(hotspot))
       .to(flyer, { autoAlpha: 0, duration: 0.2 });
@@ -187,6 +191,7 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
     const timeline = gsap.timeline();
     timeline.set(figure, { autoAlpha: 0 }, 0);
     timeline.add(director.pushIn(rig, hotspot), 0);
+    timeline.add(director.upstage(true), 0); // the costumes upstage go dark while the visitor reads
     timeline.fromTo(panel,
       { ...offscreen(), autoAlpha: 0 },
       { xPercent: 0, yPercent: 0, autoAlpha: 1, ...MOTION.panelIn },
@@ -262,6 +267,7 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
     const timeline = gsap.timeline();
     timeline.add(closeTimeline(), 0);
     timeline.add(director.pullBack(rig), 0.2);
+    timeline.add(director.upstage(false), 0.2);
     return director.play(timeline, 'explore');
   }
 

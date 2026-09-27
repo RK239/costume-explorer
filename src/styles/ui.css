@@ -22,11 +22,17 @@ button {
   justify-content: center;
 }
 
+/* Portrait: the title at the top, centred, level with the language button, and the invitation
+   centred under the stage, as far from the bottom as the title is from the top; the costumes
+   stand between them (director.attractRegion). */
 @media (orientation: portrait) {
   .attract {
-    inset-block: auto var(--edge);
+    inset-block: 28px 80px;
     inset-inline: var(--edge);
     inline-size: auto;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
   }
 }
 
@@ -72,6 +78,26 @@ button {
   block-size: 30px;
   border: 2px solid var(--accent);
   border-radius: 50%;
+}
+
+/* Portrait: the title is a touch smaller, so it clears the language button beside it on every
+   iPad width; the invitation drops to the bottom, under the stage, a size larger so it reads
+   from a distance. */
+@media (orientation: portrait) {
+  .attract__title {
+    font-size: calc(var(--text-attract-title) * 0.92);
+  }
+
+  .attract__invite {
+    margin-block-start: auto;
+    gap: 22px;
+    font-size: calc(var(--text-attract-invite) * 1.25);
+  }
+
+  .attract__ring {
+    inline-size: 38px;
+    block-size: 38px;
+  }
 }
 
 /* The teaser on the hero's back hotspot. Placed from the 3D projection, like a hotspot,

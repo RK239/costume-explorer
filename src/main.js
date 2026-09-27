@@ -14,6 +14,7 @@ import { flags, state } from './state.js';
 import { lockTouch } from './ui/touch-lock.js';
 import { createStage } from './stage/scene.js';
 import { loadCostumes } from './stage/costumes.js';
+import { createRevolve } from './stage/revolve.js';
 import { createDirector } from './stage/director.js';
 import { createTurntables } from './stage/turntable.js';
 import { createAttract } from './ui/attract.js';
@@ -39,13 +40,14 @@ const stats = devTools?.stats;
 
 const costumes = content.costumes.map((c) => (flags.skip.includes(c.id) ? { ...c, model: '' } : c));
 const rigs = await loadCostumes(stage.scene, costumes, { onStatus: devTools?.status });
-const director = createDirector(stage, rigs);
-const turntables = createTurntables({ rigs, canvas, overlay, director });
+const revolve = createRevolve({ rigs });
+const director = createDirector(stage, rigs, revolve);
+const turntables = createTurntables({ rigs, canvas, overlay, director, revolve });
 director.turntables = turntables;
 // Selector thumbnails, rendered from the costumes (this also uploads every texture up front).
 const thumbnails = captureThumbnails({ stage, rigs, director });
 
-const attract = createAttract({ overlay, content, rigs, stage, director, turntables });
+const attract = createAttract({ overlay, content, rigs, stage, director, turntables, revolve });
 
 // Hotspots open stories; a story marks its hotspot as seen.
 let story = null;
@@ -56,6 +58,15 @@ const hotspots = createHotspots({
 story = createStory({ overlay, content, director, turntables, hotspots });
 const selector = createSelector({ overlay, content, rigs, director, story, thumbnails });
 const label = createLabel({ overlay, rigs });
+
+// Exploring, a tap on one of the costumes upstage brings it to the front: the stage itself is
+// the way to the others, as well as the buttons.
+turntables.onTap((event) => {
+  if (state.mode !== 'explore' || director.locked) return;
+  const rect = canvas.getBoundingClientRect();
+  const index = director.costumeAt(event.clientX - rect.left, event.clientY - rect.top);
+  if (index !== null && index !== state.focus) director.toCostume(index);
+});
 
 // The top corner at the inline end: the language button with Home under it. One container, so
 // both move together when the language flips the page.
@@ -77,16 +88,18 @@ createLanguageSwitch({
     switching = false;
   },
 });
-devTools?.attach({ stage, rigs, director, turntables });
+devTools?.attach({ stage, rigs, director, turntables, revolve });
 
 // Home: back to the lineup with a pull-back to the wide shot, then the attract loop as usual.
-// Any open story closes inside the same move. Keeps this visitor's finds and language.
+// Any open story closes inside the same move. Like every return to the first positions, it
+// clears what was found, once the move has landed (the counts don't visibly drop to zero on the
+// way out); it keeps the language.
 const home = createHome({
   parent: corner,
   content,
   onHome: () => {
     if (director.locked || state.mode === 'attract') return false;
-    director.toAttract(state.story ? story.closeTimeline() : undefined);
+    director.toAttract(state.story ? story.closeTimeline() : undefined).then(() => hotspots.resetSeen());
     return true;
   },
 });
@@ -122,6 +135,7 @@ if (flags.focus !== null) {
 gsap.ticker.add((time, deltaMs) => {
   stats?.begin();
   turntables.update(deltaMs / 1000);
+  revolve.update();
   director.update();
   updateAtmosphere(time, stage.renderer.getPixelRatio());
   stage.camera.updateMatrixWorld();
