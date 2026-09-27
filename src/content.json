@@ -40,10 +40,10 @@
           "normal": [0.26, 0, 0.97],
           "frame": 0.5,
           "label": { "en": "The embroidery", "ar": "التطريز" },
-          "material": { "en": "Pink, cream and green silk embroidery, worked with metal thread over a pale rose silk ground.", "ar": "" },
-          "made": { "en": "The design was embroidered onto the cut pieces before the coat was sewn up, so every flower sits exactly where an edge will fall.", "ar": "" },
-          "artistry": { "en": "The flowers run in one unbroken border down both fronts, framing the body like a portrait. The braided bars between the buttons keep time with them.", "ar": "" },
-          "image": { "src": "/images/national-embroidery.webp", "kind": "closeup", "alt": { "en": "Close-up of the floral embroidery beside the buttons", "ar": "" } },
+          "material": { "en": "Pink, cream and green silk embroidery, worked with metal thread over a pale rose silk ground.", "ar": "تطريزٌ بالحرير الوردي والكريمي والأخضر، مشغولٌ بخيوطٍ معدنية على أرضيةٍ من الحرير الوردي الفاتح." },
+          "made": { "en": "The design was embroidered onto the cut pieces before the coat was sewn up, so every flower sits exactly where an edge will fall.", "ar": "طُرِّز التصميم على القطع المقصوصة قبل خياطة المعطف، فتقع كلُّ زهرةٍ تمامًا حيث ستكون الحافة." },
+          "artistry": { "en": "The flowers run in one unbroken border down both fronts, framing the body like a portrait. The braided bars between the buttons keep time with them.", "ar": "تمتدّ الأزهار في إطارٍ واحدٍ متّصل على جانبَي الصدر، تؤطّر الجسد كأنه لوحة، وتسير الأشرطة المضفورة بين الأزرار على إيقاعها." },
+          "image": { "src": "/images/national-embroidery.webp", "kind": "closeup", "alt": { "en": "Close-up of the floral embroidery beside the buttons", "ar": "لقطةٌ قريبة للتطريز الزهري بجانب الأزرار" } },
           "invented": true
         },
         {
@@ -54,10 +54,10 @@
           "normal": [0, 0, 1],
           "frame": 0.55,
           "label": { "en": "Knee bands", "ar": "أربطة الركبة" },
-          "material": { "en": "Silk breeches gathered into a band just below the knee and tied with ribbon.", "ar": "" },
-          "made": { "en": "The legs were cut full and pleated into the band, then fastened with ribbon ties rather than buckles.", "ar": "" },
-          "artistry": { "en": "Like the puffed shoulders, the loose, ribboned breeches look back to older Swedish dress instead of to Paris.", "ar": "" },
-          "image": { "src": "/images/national-knee-bands.webp", "kind": "closeup", "alt": { "en": "Close-up of a ribbon tie at the knee", "ar": "" } },
+          "material": { "en": "Silk breeches gathered into a band just below the knee and tied with ribbon.", "ar": "سروالٌ من الحرير مجمَّعٌ في رباطٍ تحت الركبة مباشرةً، ومعقودٌ بشريط." },
+          "made": { "en": "The legs were cut full and pleated into the band, then fastened with ribbon ties rather than buckles.", "ar": "قُصّت الساقان واسعتين وثُنيتا داخل الرباط، ثم أُحكمتا بأشرطةٍ معقودة بدل الأبازيم." },
+          "artistry": { "en": "Like the puffed shoulders, the loose, ribboned breeches look back to older Swedish dress instead of to Paris.", "ar": "كالأكتاف المنفوشة، يعود السروال الفضفاض ذو الأشرطة إلى الأزياء السويدية القديمة، لا إلى باريس." },
+          "image": { "src": "/images/national-knee-bands.webp", "kind": "closeup", "alt": { "en": "Close-up of a ribbon tie at the knee", "ar": "لقطةٌ قريبة لشريطٍ معقود عند الركبة" } },
           "invented": true
         },
         {
@@ -68,10 +68,10 @@
           "normal": [-0.95, 0.2, 0.24],
           "frame": 0.5,
           "label": { "en": "Puffed shoulder", "ar": "الكتف المنفوش" },
-          "material": { "en": "A roll of gathered silk set into the top of the sleeve.", "ar": "" },
-          "made": { "en": "Strips of silk were gathered into a rounded puff and stitched into the armhole seam before the sleeve went in.", "ar": "" },
-          "artistry": { "en": "The puff recalls the slashed sleeves of the 1500s. Gustav III wanted a costume that looked Swedish and historic, not borrowed from Versailles.", "ar": "" },
-          "image": { "src": "/images/national-shoulder.webp", "kind": "closeup", "alt": { "en": "The gathered puff at the shoulder", "ar": "" } },
+          "material": { "en": "A roll of gathered silk set into the top of the sleeve.", "ar": "لفّةٌ من الحرير المجمَّع مثبّتةٌ في أعلى الكمّ." },
+          "made": { "en": "Strips of silk were gathered into a rounded puff and stitched into the armhole seam before the sleeve went in.", "ar": "جُمعت شرائط الحرير في نفخةٍ مستديرة، وخيطت في درز فتحة الذراع قبل تركيب الكمّ." },
+          "artistry": { "en": "The puff recalls the slashed sleeves of the 1500s. Gustav III wanted a costume that looked Swedish and historic, not borrowed from Versailles.", "ar": "تستعيد النفخة الأكمامَ المشقوقة في القرن السادس عشر؛ فقد أراد غوستاف الثالث زيًّا يبدو سويديًّا وتاريخيًّا، لا مستعارًا من فرساي." },
+          "image": { "src": "/images/national-shoulder.webp", "kind": "closeup", "alt": { "en": "The gathered puff at the shoulder", "ar": "النفخة المجمَّعة عند الكتف" } },
           "invented": true
         },
         {
@@ -82,10 +82,10 @@
           "normal": [0, 0, -1],
           "frame": 0.6,
           "label": { "en": "The cape", "ar": "الرداء" },
-          "material": { "en": "A silk cape lined in pale silk and edged with a broad embroidered border.", "ar": "" },
-          "made": { "en": "It is gathered into the neckline at the back, so it falls in deep folds from the shoulders.", "ar": "" },
-          "artistry": { "en": "Only seen from behind, the cape turns a close-fitting coat into a ceremonial silhouette. The same floral border as the front ties the two together.", "ar": "" },
-          "image": { "src": "/images/national-cape.webp", "kind": "sketch", "alt": { "en": "Sketch of the cape falling from the shoulders", "ar": "" } },
+          "material": { "en": "A silk cape lined in pale silk and edged with a broad embroidered border.", "ar": "رداءٌ من الحرير مبطّنٌ بحريرٍ فاتح، تحيط به حاشيةٌ عريضة مطرّزة." },
+          "made": { "en": "It is gathered into the neckline at the back, so it falls in deep folds from the shoulders.", "ar": "جُمع عند فتحة العنق من الخلف، فينسدل من الكتفين في ثنياتٍ عميقة." },
+          "artistry": { "en": "Only seen from behind, the cape turns a close-fitting coat into a ceremonial silhouette. The same floral border as the front ties the two together.", "ar": "لا يُرى إلا من الخلف، فيحوّل المعطف الملاصق للجسم إلى هيئةٍ احتفالية، وتربط الحاشية الزهرية نفسها بين الأمام والخلف." },
+          "image": { "src": "/images/national-cape.webp", "kind": "closeup", "alt": { "en": "Close-up of the cape falling from the shoulders", "ar": "لقطةٌ قريبة للرداء ينسدل من الكتفين" } },
           "invented": true
         }
       ]
@@ -113,10 +113,10 @@
           "normal": [0, 0.1, 0.99],
           "frame": 0.4,
           "label": { "en": "The neckline", "ar": "فتحة العنق" },
-          "material": { "en": "White cotton cord, stitched in loops around the slit neck of a light printed cotton.", "ar": "" },
-          "made": { "en": "The cord is laid along a drawn line and held down with small stitches, called couching. It runs on down the front to the hem.", "ar": "" },
-          "artistry": { "en": "In all this colour the white cord is the one calm line, framing the face and throat.", "ar": "" },
-          "image": { "src": "/images/dress-neckline.webp", "kind": "closeup", "alt": { "en": "Close-up of the white cord loops around the neckline", "ar": "" } },
+          "material": { "en": "White cotton cord, stitched in loops around the slit neck of a light printed cotton.", "ar": "حبلٌ قطنيّ أبيض مخيطٌ في حلقاتٍ حول فتحة العنق المشقوقة، على قطنٍ خفيفٍ مطبوع." },
+          "made": { "en": "The cord is laid along a drawn line and held down with small stitches, called couching. It runs on down the front to the hem.", "ar": "يُمدّ الحبل على خطٍّ مرسوم ويُثبَّت بغرزٍ صغيرة، في طريقةٍ تُسمّى «التثبيت»، ثم يمتدّ على طول الأمام حتى الذيل." },
+          "artistry": { "en": "In all this colour the white cord is the one calm line, framing the face and throat.", "ar": "وسط كل هذه الألوان، يبقى الحبل الأبيض الخطَّ الهادئ الوحيد، يؤطّر الوجه والعنق." },
+          "image": { "src": "/images/dress-neckline.webp", "kind": "closeup", "alt": { "en": "Close-up of the white cord loops around the neckline", "ar": "لقطةٌ قريبة لحلقات الحبل الأبيض حول فتحة العنق" } },
           "invented": true
         },
         {
@@ -127,10 +127,10 @@
           "normal": [-0.44, 0, 0.9],
           "frame": 0.5,
           "label": { "en": "The lettering", "ar": "الحروف" },
-          "material": { "en": "Letters printed in bright colours on light cotton, a different colour on each patch.", "ar": "" },
-          "made": { "en": "The patches and their letters are one print, run across the whole length of cloth before it was cut.", "ar": "" },
-          "artistry": { "en": "The letters are shapes from Arabic script, not words: they spell nothing. They are there for rhythm and colour.", "ar": "" },
-          "image": { "src": "/images/dress-lettering.webp", "kind": "closeup", "alt": { "en": "Close-up of the printed letter shapes on one patch", "ar": "" } },
+          "material": { "en": "Letters printed in bright colours on light cotton, a different colour on each patch.", "ar": "حروفٌ مطبوعةٌ بألوانٍ زاهية على قطنٍ خفيف، بلونٍ مختلف في كل رقعة." },
+          "made": { "en": "The patches and their letters are one print, run across the whole length of cloth before it was cut.", "ar": "الرقع وحروفها طبعةٌ واحدة، مُرِّرت على طول القماش كله قبل قصّه." },
+          "artistry": { "en": "The letters are shapes from Arabic script, not words: they spell nothing. They are there for rhythm and colour.", "ar": "الحروف أشكالٌ من الخط العربي لا كلمات، فهي لا تقول شيئًا؛ وُضعت للإيقاع واللون." },
+          "image": { "src": "/images/dress-lettering.webp", "kind": "closeup", "alt": { "en": "Close-up of the printed letter shapes on one patch", "ar": "لقطةٌ قريبة لأشكال الحروف المطبوعة على إحدى الرقع" } },
           "invented": true
         },
         {
@@ -141,10 +141,10 @@
           "normal": [0.99, 0, 0.05],
           "frame": 0.45,
           "label": { "en": "The cuffs", "ar": "أطراف الأكمام" },
-          "material": { "en": "The same white cord as the neckline, worked around the end of each wide sleeve.", "ar": "" },
-          "made": { "en": "The cord goes on while the sleeve is still flat. Then the sleeve is sewn into a tube and set into the dress.", "ar": "" },
-          "artistry": { "en": "Loose three-quarter sleeves let the air in on warm days, and the corded cuffs lead the eye from the face to the hands.", "ar": "" },
-          "image": { "src": "/images/dress-cuff.webp", "kind": "closeup", "alt": { "en": "The corded cuff at the end of a sleeve", "ar": "" } },
+          "material": { "en": "The same white cord as the neckline, worked around the end of each wide sleeve.", "ar": "الحبل الأبيض نفسه الذي عند فتحة العنق، مشغولٌ حول طرف كل كمٍّ واسع." },
+          "made": { "en": "The cord goes on while the sleeve is still flat. Then the sleeve is sewn into a tube and set into the dress.", "ar": "يُثبَّت الحبل والكمّ لا يزال مسطّحًا، ثم يُخاط الكمّ أنبوبًا ويُركَّب في الفستان." },
+          "artistry": { "en": "Loose three-quarter sleeves let the air in on warm days, and the corded cuffs lead the eye from the face to the hands.", "ar": "تُدخل الأكمام الواسعة الهواءَ في الأيام الدافئة، وتقود أطرافها المزيّنة بالحبل العينَ من الوجه إلى اليدين." },
+          "image": { "src": "/images/dress-cuff.webp", "kind": "closeup", "alt": { "en": "The corded cuff at the end of a sleeve", "ar": "طرف الكمّ المزيّن بالحبل" } },
           "invented": true
         },
         {
@@ -155,10 +155,10 @@
           "normal": [0, 0.1, -0.99],
           "frame": 0.55,
           "label": { "en": "The patchwork", "ar": "الرُّقَع" },
-          "material": { "en": "One printed cotton. The patchwork is printed: there are no seams between the diamonds.", "ar": "" },
-          "made": { "en": "The diamonds were drawn at 45°, so the pattern flows over the shoulders and down the back without a break.", "ar": "" },
-          "artistry": { "en": "With no cord at the back, the print speaks alone: a quilt of colour and letters, set on the diagonal so the eye keeps moving.", "ar": "" },
-          "image": { "src": "/images/dress-patchwork.webp", "kind": "sketch", "alt": { "en": "Sketch of the diamond layout of the print", "ar": "" } },
+          "material": { "en": "One printed cotton. The patchwork is printed: there are no seams between the diamonds.", "ar": "قطنٌ واحدٌ مطبوع؛ فالرقع مطبوعة، ولا دروز بين المعيّنات." },
+          "made": { "en": "The diamonds were drawn at 45°, so the pattern flows over the shoulders and down the back without a break.", "ar": "رُسمت المعيّنات بزاوية ٤٥ درجة، فينساب النقش فوق الكتفين وعلى طول الظهر دون انقطاع." },
+          "artistry": { "en": "With no cord at the back, the print speaks alone: a quilt of colour and letters, set on the diagonal so the eye keeps moving.", "ar": "لا حبل في الخلف، فتتكلّم الطبعة وحدها: لحافٌ من الألوان والحروف، مائلٌ ليبقى النظر متنقّلًا." },
+          "image": { "src": "/images/dress-patchwork.webp", "kind": "closeup", "alt": { "en": "Close-up of printed diamonds meeting on the back", "ar": "لقطةٌ قريبة لمعيّناتٍ مطبوعة تلتقي على الظهر" } },
           "invented": true
         }
       ]
@@ -186,10 +186,10 @@
           "normal": [0, 0.15, 0.99],
           "frame": 0.4,
           "label": { "en": "The visor", "ar": "حاجب الخوذة" },
-          "material": { "en": "Steel, darkened, with raised ornament that was once richly gilded.", "ar": "" },
-          "made": { "en": "The visor pivots on rivets at the sides of the helmet. A single slit lets the wearer see, set on a ridge so a lance point glances away.", "ar": "" },
-          "artistry": { "en": "Even the visor carries figures in relief, so the king's face becomes a sculpted mask.", "ar": "" },
-          "image": { "src": "/images/armour-visor.webp", "kind": "closeup", "alt": { "en": "Close-up of the visor's relief", "ar": "" } },
+          "material": { "en": "Steel, darkened, with raised ornament that was once richly gilded.", "ar": "فولاذٌ داكن، عليه زخارف بارزة كانت مذهّبةً بسخاء." },
+          "made": { "en": "The visor pivots on rivets at the sides of the helmet. A single slit lets the wearer see, set on a ridge so a lance point glances away.", "ar": "يدور الحاجب على مساميرَ في جانبَي الخوذة، وشقٌّ واحد يتيح الرؤية، قائمٌ على حافةٍ بارزة كي ينزلق عنه رأس الرمح." },
+          "artistry": { "en": "Even the visor carries figures in relief, so the king's face becomes a sculpted mask.", "ar": "حتى الحاجب يحمل أشكالًا بارزة، فيصير وجه الملك قناعًا منحوتًا." },
+          "image": { "src": "/images/armour-visor.webp", "kind": "closeup", "alt": { "en": "Close-up of the visor's relief", "ar": "لقطةٌ قريبة للنقش البارز على الحاجب" } },
           "invented": true
         },
         {
@@ -200,10 +200,10 @@
           "normal": [0, 0, 1],
           "frame": 0.5,
           "label": { "en": "The breastplate", "ar": "صفيحة الصدر" },
-          "material": { "en": "Steel, with ornament beaten up from behind and then gilded.", "ar": "" },
-          "made": { "en": "The armour was probably made in Arboga, then sent to Antwerp, where the goldsmith Elisaeus Libaerts hammered the design from the back and sharpened it from the front.", "ar": "" },
-          "artistry": { "en": "The scenes come from ancient myth, chosen because they could be read as flattering echoes of Swedish history.", "ar": "" },
-          "image": { "src": "/images/armour-breastplate.webp", "kind": "closeup", "alt": { "en": "Close-up of the relief on the breastplate", "ar": "" } },
+          "material": { "en": "Steel, with ornament beaten up from behind and then gilded.", "ar": "فولاذٌ، زخارفه مطروقةٌ من الخلف ثم مذهّبة." },
+          "made": { "en": "The armour was probably made in Arboga, then sent to Antwerp, where the goldsmith Elisaeus Libaerts hammered the design from the back and sharpened it from the front.", "ar": "صُنع الدرع على الأرجح في أربوغا، ثم أُرسل إلى أنتويرب، حيث طرق الصائغ إليسيوس ليبارتس التصميم من الخلف وأبرز تفاصيله من الأمام." },
+          "artistry": { "en": "The scenes come from ancient myth, chosen because they could be read as flattering echoes of Swedish history.", "ar": "المشاهد مأخوذةٌ من الأساطير القديمة، اختيرت لأنها تُقرأ أصداءً مُطرية للتاريخ السويدي." },
+          "image": { "src": "/images/armour-breastplate.webp", "kind": "closeup", "alt": { "en": "Close-up of the relief on the breastplate", "ar": "لقطةٌ قريبة للنقش البارز على صفيحة الصدر" } },
           "invented": true
         },
         {
@@ -214,10 +214,10 @@
           "normal": [0.85, 0.25, 0.46],
           "frame": 0.45,
           "label": { "en": "Lion shoulder", "ar": "كتف الأسد" },
-          "material": { "en": "Overlapping steel plates guard the shoulder, each riveted so it can slide over the next.", "ar": "" },
-          "made": { "en": "The curved plates overlap like roof tiles and are joined with rivets that move in slots, so the arm can still rise.", "ar": "" },
-          "artistry": { "en": "The lion is Sweden's heraldic beast. On the shoulder it is seen from the side, as the king rode past.", "ar": "" },
-          "image": { "src": "/images/armour-pauldron.webp", "kind": "closeup", "alt": { "en": "The lion in relief on the shoulder plate", "ar": "" } },
+          "material": { "en": "Overlapping steel plates guard the shoulder, each riveted so it can slide over the next.", "ar": "صفائح فولاذية متراكبة تحمي الكتف، كلٌّ منها مثبّتٌ بمسامير لينزلق فوق الذي يليه." },
+          "made": { "en": "The curved plates overlap like roof tiles and are joined with rivets that move in slots, so the arm can still rise.", "ar": "تتراكب الصفائح المقوّسة كبلاط السقف، وتصلها مساميرُ تتحرّك في شقوق، فيبقى الذراع قادرًا على الارتفاع." },
+          "artistry": { "en": "The lion is Sweden's heraldic beast. On the shoulder it is seen from the side, as the king rode past.", "ar": "الأسد حيوان شعار السويد، ويظهر على الكتف من الجانب، كما رآه الناس والملك يمرّ على فرسه." },
+          "image": { "src": "/images/armour-pauldron.webp", "kind": "closeup", "alt": { "en": "The lion in relief on the shoulder plate", "ar": "الأسد البارز على صفيحة الكتف" } },
           "invented": true
         },
         {
@@ -228,10 +228,10 @@
           "normal": [0, 0, -1],
           "frame": 0.55,
           "label": { "en": "The backplate", "ar": "صفيحة الظهر" },
-          "material": { "en": "The back is decorated in the same gilded relief as the front.", "ar": "" },
-          "made": { "en": "Front and back plates are joined at the shoulders and sides by straps and buckles, so attendants could arm the king.", "ar": "" },
-          "artistry": { "en": "Parade armour was made to be seen from every side. In a procession through Stockholm, the crowd saw the king's back as often as his face.", "ar": "" },
-          "image": { "src": "/images/armour-backplate.webp", "kind": "sketch", "alt": { "en": "Sketch of the backplate's decoration", "ar": "" } },
+          "material": { "en": "The back is decorated in the same gilded relief as the front.", "ar": "زُيّن الظهر بالنقش البارز المذهّب نفسه الذي على الأمام." },
+          "made": { "en": "Front and back plates are joined at the shoulders and sides by straps and buckles, so attendants could arm the king.", "ar": "تتّصل صفيحتا الأمام والخلف عند الكتفين والجانبين بأحزمةٍ وأبازيم، ليتمكّن الخدم من إلباس الملك درعه." },
+          "artistry": { "en": "Parade armour was made to be seen from every side. In a procession through Stockholm, the crowd saw the king's back as often as his face.", "ar": "صُنعت دروع الاستعراض لتُرى من كل جانب؛ ففي موكبٍ يعبر ستوكهولم، كان الجمهور يرى ظهر الملك بقدر ما يرى وجهه." },
+          "image": { "src": "/images/armour-backplate.webp", "kind": "closeup", "alt": { "en": "Close-up of the backplate's decoration", "ar": "لقطةٌ قريبة لزخرفة صفيحة الظهر" } },
           "invented": true
         }
       ]

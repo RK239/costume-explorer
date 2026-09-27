@@ -4,9 +4,9 @@ import { t, onLanguage } from './i18n.js';
 
 // The Home button, under the language button in the same corner (so it moves with it when the
 // language flips). It takes the visitor back to the lineup: any story closes, the camera pulls
-// back to the wide shot and the attract loop carries on. Unlike the idle reset it keeps what
-// this visitor has found and their language: they're still here. Shown while exploring or in a
-// story; in the attract state you're already home.
+// back to the wide shot and the attract loop carries on. Like the idle reset, it clears what was
+// found (main.js); unlike it, it keeps the language. Shown while exploring or in a story; in the
+// attract state you're already home.
 
 const HOUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.2 12 4.5l8 6.7M6.6 9.6V19.5h10.8V9.6" '
   + 'fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';

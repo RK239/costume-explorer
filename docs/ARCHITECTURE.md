@@ -1,17 +1,19 @@
 # Architecture
 
 ## The idea in one line
-One dark stage with three costumes, each on its own turntable. Visitors turn the costume; the camera belongs to a "director" that makes every move with GSAP.
+One dark stage with three costumes on a revolving stage, each on its own turntable. Visitors turn the costume, or swipe the stage to bring the next one forward; the camera belongs to a "director" that makes every move with GSAP.
 
 ## Stage
-- The three costumes stand in a row on the X axis, about 3 m apart (tune by eye). Each sits in its own `Group` (the turntable pivot), with feet at y = 0 and the front facing +Z.
+- The three costumes stand on a revolving stage (`revolve.js`), one slot each on an ellipse whose front point is the origin. The costume in front is the one being explored; the other two stand upstage behind it (1.5 × `deep` back, ±`across` to the sides; narrower in portrait so they stay in frame).
+- Each costume has a `station` (the revolve moves it) holding its turntable (the pivot visitors turn), its shaft of light and its key light. Feet at y = 0, front facing +Z.
 - A thin plinth disc under each costume turns with it. It makes the turning read clearly.
 - Fake contact shadow: a plane with a radial-gradient texture under each costume. No shadow maps.
 - Lighting:
   - `RoomEnvironment` via `PMREMGenerator` at low intensity as fill (no HDR download)
   - one `SpotLight` key per costume, positioned front-high and a little off-axis so it rakes across the fabric
-  - a costume goes dark by tweening its key light intensity and its materials' `envMapIntensity` to zero. Collect each costume's materials at load, and give them the environment as their own `envMap`: three.js ignores `envMapIntensity` for `scene.environment`.
-  - below light level 0.1 a costume also dissolves into the stage colour (a uniform mixed in at the end of its shader), so at 0 it's invisible and can be shown or hidden unseen. Switching costumes is a light cross-fade: the one the camera leaves fades out, the next comes up as the camera lands.
+  - light follows position: every frame, each costume's level is mixed from `light.back` to `light.front` by how near the front it is, so the arriving costume brightens as it comes forward and the leaving one dims as it goes upstage. The director tweens only `light.front` / `light.back` (attract wide: both at the glow; exploring: 1 / 0.07; attract hero and story: 1 / 0).
+  - a level sets the key light intensity and the materials' `envMapIntensity`. Collect each costume's materials at load, and give them the environment as their own `envMap`: three.js ignores `envMapIntensity` for `scene.environment`.
+  - below level 0.1 a costume also dissolves into the stage colour (a uniform mixed in at the end of its shader), so the upstage pair sinks into the dark; at 0 it isn't drawn.
   - never toggle a light's `visible`. Three.js recompiles every material when the number of lights changes, which stalls the iPad. Only change intensity.
 - Background: a near-black stage colour.
 - Air without lights (`atmosphere.js`): each costume stands in a shaft of light through haze (a cone mesh, only its far half drawn, brightness from the view angle), with a pool on the floor and dust drifting in it; all of it follows the costume's light level. Faint shafts 7–30 m back give depth through parallax. Unlit and additive, so nothing recompiles.
@@ -19,17 +21,19 @@ One dark stage with three costumes, each on its own turntable. Visitors turn the
 - Camera: a PerspectiveCamera with a vertical FOV around 30° (roughly a 45 mm full-frame vertical equivalent). Rakesh has the final say on the lens.
 
 ## Interaction model: turntable, not orbit
-- A horizontal drag rotates the focused costume's turntable (`rotation.y`), while exploring and during a story. Vertical drag is ignored.
+- A horizontal drag on the costume rotates its turntable (`rotation.y`), while exploring and during a story. Vertical drag is ignored.
+- Exploring, a drag that starts on the empty stage (or on an upstage costume) turns the revolve instead: the costume in front follows the finger (gain 1.4). On release the director lands it on the next costume if the swipe went past 30% of a slot or was flicked that way, otherwise back where it was. A tap on an upstage costume brings it to the front.
 - Only the first pointer counts; extra touches are ignored. Use `setPointerCapture`.
 - On release, the turntable keeps turning with inertia and damping; clamp the maximum angular velocity.
 - Auto-rotate: a slow constant turn when idle. It resumes about 3 s after the last touch, easing up to speed rather than jumping. Changes of pace glide.
-- Attract: all three turn slowly together (0.15 rad/s). Each loop starts from the costumes' first positions (`rig.home`): the director turns them back while the camera returns to the wide shot.
+- Attract: one continuous take. Every shot frames the whole group (`director.frameGroup`: the hero in front, the pair upstage, the stage closed up to fit beside the headline). Per costume: hand-over (revolve turns, camera eases back, all lit), arrival (camera closes in, hero lit, upstage at 0.2), hero (it turns to show its back, pauses, comes round to its front, while the camera leans in). The revolve always turns one way, the next costume coming from the side away from the headline, and each loop starts with the revolve at its home (the middle costume in front). A costume in the centre always faces the visitor: it turns to its front as the stage brings it round. The wide shot holds with all three still, facing front; all three start turning as the camera moves in (the two upstage at 0.15 rad/s). Every hero turns at one pace and hands back to the slow turn without a jolt. Every reset turns all three turntables to `rig.home` (front): at the start of each loop, and on Home and the idle return as the camera pulls back.
 - Fast spin: when |angular velocity| passes a threshold, add `.spinning` to the overlay (labels hide). Remove it once the turntable settles.
 - Tap vs drag: movement under ~8 px and release under ~300 ms counts as a tap. Hotspots are DOM buttons, so taps on them never reach the canvas.
 - No pinch zoom on the model. Close-ups are authored through hotspots, which keeps the costume readable on screen.
 
 ## Camera director
-- The camera stands level at eye height (1.4 m) and never rotates. A `shot` object `{ x, y, z, shiftX, shiftY }` holds its position and lens shift, and every camera move is a GSAP tween on it. `update()` applies it each frame.
+- The camera stands level and never rotates: at eye height (1.4 m) while exploring, and at 0.8 m (about the costumes' middle) in the attract loop, so the three line up around one axis; it rises as a visitor steps in. A `shot` object `{ x, y, z, shiftX, shiftY }` holds its position and lens shift, and every camera move is a GSAP tween on it. `update()` applies it each frame.
+- The camera stays at the front of the revolve and only pushes in, pulls back and shifts; the revolve brings each costume to it. Switching is one timeline: the revolve turns (shortest way), the stage light follows, the camera settles and the arriving costume turns its front to the visitor.
 - The free region is the screen minus the UI bands in `tokens.css` (`--frame-top`, `--frame-bottom`, `--frame-inline`), so layout and camera share one source.
 - `frameCostume(costume, freeRegion)` returns the shot that fits the costume inside the free screen region:
   - the subject is the costume's height from the plinth's underside to its top, and its reach from the turntable axis at any angle (`rig.radius`)
@@ -122,7 +126,8 @@ src/
     stand-in.js      dress-form stand-ins while a costume has no model yet
     atmosphere.js    shafts of light, haze, dust and distant lights (unlit, additive)
     thumbnails.js    selector thumbnails rendered from the costumes at load (also uploads textures)
-    turntable.js     drag, inertia, auto-rotate, fast-spin detection
+    revolve.js       the revolving stage: slots, light by position
+    turntable.js     drag, inertia, auto-rotate, fast-spin detection, the stage swipe
     director.js      framing, lens shift, push-in, mode timelines
   motion.js          motion tokens: every duration and ease
   dev.js             ?dev=1 tools: stats, load status, probe, tap-to-log hotspot positions

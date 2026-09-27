@@ -114,6 +114,7 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 - [x] Checked: the back hotspot only appears (and is only tappable) once the costume is turned round.
 
 *Rakesh, now the hotspot positions are fixed: render the close-ups (long lens, shallow depth of field) and Line Art sketches in Blender from the full-size source models. File names are already in content.json (`/images/national-embroidery.webp` etc.); drop them in `public/images/` and they replace the "Image to come" placeholder.*
+- [x] All 12 close-ups rendered by Rakesh (2026-09-27, 1920×1080 WebP with transparent backgrounds, 52–199 KB) and placed in `public/images/` on the revolving-stage branch. Every story is a close-up now (no Line Art sketches; DECISIONS: image treatments).
 
 ## 5. Story (~1 h)
 - [x] Tapping a hotspot runs one timeline:
@@ -189,7 +190,7 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 - [x] Cinematic hotspot labels: type on the image with a halo, hairline leaders, finer rings; labels draw out when the detail faces the visitor.
 - [x] Error pass: every flow run in the browser (attract, enter, all 8 stories and chapters, switching, idle reset), no console errors. Fixed an undefined GLSL `smoothstep` and the dust's pixel ratio.
 - [x] Attract: the wide shot holds 7.5 s with all three turning slowly together, then the hero shots; changes of turntable pace glide instead of jolting.
-- [x] Attract: every loop starts from the costumes' first positions; they turn back while the camera returns to the wide shot (end of each loop, and the idle return).
+- [x] Attract: every loop starts from the costumes' first positions; they turn back while the camera returns to the wide shot (end of each loop, and the idle return). *(Also on the revolving-stage branch: every loop, Home and idle; see DECISIONS.)*
 - [x] Third costume: the Calligraphy Dress, through the pipeline (stood upright, centred on its skirt), with its accent, title, context, credit and four hotspots with copy.
 - [x] Switching: every arrival turns the same gentle 60° onto the costume's front and goes straight into its slow turn (was 0.97–5.51 rad, then a 3 s dead stop); a drag started mid-move takes over when the move lands.
 - [x] Switching is a light cross-fade: the costume the camera leaves fades out, the next comes up out of the dark as the camera lands; nothing pops in or out (fixed "going dark" never dimming the room fill).
@@ -208,8 +209,8 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 - [x] Arabic type scale: IBM Plex Sans Arabic, about 10% larger, more line height, no letter-spacing, no uppercase, no italics. Eastern Arabic digits.
 - [x] Arabic for the interface, the exhibition title, every costume's title and context, and the hotspot labels.
 - [x] The attract loop follows the kiosk's language (all English or all Arabic); Home keeps the visitor's language, the idle reset returns to English.
-- [x] Home button under the language button (they move together): back to the wide shot and the attract loop, keeping the visitor's finds and language.
-- [ ] Arabic for the hotspot chapters and image descriptions, after Rakesh's copy pass.
+- [x] Home button under the language button (they move together): back to the wide shot and the attract loop, keeping the visitor's language. *(Revised 2026-09-27: it also clears the found counts.)*
+- [x] Arabic for the hotspot chapters and image descriptions (2026-09-28, from the current English draft; redo any that change in Rakesh's copy pass).
 - [ ] A native reader proofreads the Arabic, or the README says it wasn't.
 
 ## 12. Guided tour (~30 min)

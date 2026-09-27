@@ -1,18 +1,12 @@
 import * as THREE from 'three';
-import gsap from 'gsap';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { createStandIn } from './stand-in.js';
 import { createAir, createDistance } from './atmosphere.js';
-import { MOTION } from '../motion.js';
-
-// Metres between costumes along X. Close enough that the attract wide shot shows them large,
-// far enough that a hero shot's neighbours only appear, dimmed, at the edges.
-const SPACING = 1.8;
 
 // Key light: front-high and a little off-axis, so it rakes across the fabric.
 // Intensities are in candela (three.js physical units), so they fall off with distance.
-// The cone is narrow enough not to spill onto the neighbours at this spacing.
+// It moves with its costume on the revolve, so it always comes from the costume's front.
 const KEY = {
   offset: new THREE.Vector3(1.1, 3.4, 2.8), // from the costume's feet
   on: 55,
@@ -21,8 +15,8 @@ const KEY = {
   penumbra: 0.7,
 };
 // Below this light level a costume fades out of the scene; above it only the key light changes.
-// Down to it, the environment fill stays full, so a neighbour dimmed in the attract state (0.1)
-// still reads as part of the gallery. Below it the fill goes out and the costume dissolves into
+// Down to it, the environment fill stays full; below it, the upstage costumes (revolve.js) start
+// to sink into the dark. Below it the fill goes out and the costume dissolves into
 // the stage colour, so at 0 it's the colour of the empty stage: switched in or out, it's never
 // seen appearing or disappearing. Each costume's materials get the environment as their own
 // envMap, because three.js ignores a material's envMapIntensity when the light comes from
@@ -35,7 +29,8 @@ const FLOOR_BAND = 0.1;     // metres: the slice of the costume measured for its
 
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 
-// Loads every costume at once and stands each on its own turntable in a row.
+// Loads every costume at once and stands each on its own turntable, in its own station on the
+// revolving stage (revolve.js places the stations).
 // Resolves when all of them are ready, so switching never has to wait for a download.
 // onStatus(id, text) is optional: the dev tools use it to show load progress on the iPad.
 export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}) {
@@ -70,7 +65,6 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
 
   return costumes.map((data, index) => {
     const model = models[index];
-    const x = (index - (costumes.length - 1) / 2) * SPACING;
 
     // Measured before parenting, so everything is in the costume's own space.
     const box = new THREE.Box3().setFromObject(model);
@@ -86,13 +80,18 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
     );
     const radius = Math.max(plinthRadius + 0.02, garmentRadius);
 
+    // The station is the costume's place on the revolve; revolve.js moves it. Everything that
+    // travels with the costume hangs from it: turntable, shaft of light, key light.
+    const station = new THREE.Group();
+    station.name = `station-${data.id}`;
+    scene.add(station);
+
     // The turntable is the pivot visitors turn: like an empty parent GameObject in Unity.
     const turntable = new THREE.Group();
     turntable.name = `turntable-${data.id}`;
-    turntable.position.set(x, 0, 0);
     turntable.rotation.y = data.yawOffset ?? 0;
     turntable.add(model);
-    scene.add(turntable);
+    station.add(turntable);
 
     // Thin plinth that turns with the costume, so the turning reads even on a plain garment.
     const plinth = new THREE.Mesh(
@@ -124,13 +123,13 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
     // The shaft of light the costume stands in (atmosphere.js). Its haze behind the costume
     // separates dark silk and steel from the black, the job a rim light would do.
     const airLevel = { value: 1 };
-    const air = createAir({ x, floor: -PLINTH_HEIGHT, level: airLevel });
-    scene.add(air);
+    const air = createAir({ floor: -PLINTH_HEIGHT, level: airLevel });
+    station.add(air);
 
     const key = new THREE.SpotLight(0xffffff, KEY.on, 0, KEY.angle, KEY.penumbra, 2);
-    key.position.set(x, 0, 0).add(KEY.offset);
-    key.target.position.set(x, box.min.y + size.y * 0.55, 0); // the garment's own middle, even when it floats
-    scene.add(key, key.target);
+    key.position.copy(KEY.offset);
+    key.target.position.set(0, box.min.y + size.y * 0.55, 0); // the garment's own middle, even when it floats
+    station.add(key, key.target);
 
     // Every material on the costume and its plinth, collected once so light-up / go-dark can
     // tween them together.
@@ -147,7 +146,7 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
     for (const material of [...materials, shadow.material]) fadeIntoStage(material, fade, stageColour);
 
     return {
-      id: data.id, data, index, turntable, model, key, materials, envOn, fade, size, box, radius,
+      id: data.id, data, index, station, turntable, model, key, materials, envOn, fade, size, box, radius,
       garmentRadius, air, airLevel,
       home: data.yawOffset ?? 0, // the turntable's first position; every attract loop starts from it
       bottom: -PLINTH_HEIGHT,  // the framed height runs from the plinth's underside…
@@ -157,18 +156,8 @@ export async function loadCostumes(scene, costumes, { onStatus = () => {} } = {}
 }
 
 // Light a costume to `level` (0 = black, 1 = fully lit): its key light, its share of the
-// environment fill and the air around it move together. Returns a GSAP timeline, so the
-// director can place it inside a bigger move.
-export function lightTo(rig, level, duration = MOTION.light.duration, ease = MOTION.light.ease) {
-  const { key, env, fade } = lightLevels(rig, level);
-  return gsap.timeline()
-    .to(rig.key, { intensity: key, duration, ease }, 0)
-    .to(rig.materials, { envMapIntensity: env, duration, ease }, 0)
-    .to(rig.fade, { value: fade, duration, ease }, 0)
-    .to(rig.airLevel, { value: level, duration, ease }, 0);
-}
-
-// The same, at once: for a first frame, a thumbnail, or a costume about to come into view.
+// environment fill and the air around it together. revolve.js calls it every frame from each
+// costume's place on the stage; the thumbnails call it once.
 export function setLight(rig, level) {
   const { key, env, fade } = lightLevels(rig, level);
   rig.key.intensity = key;

@@ -54,11 +54,12 @@ const NOISE = /* glsl */ `
 
 const additive = { transparent: true, depthWrite: false, blending: THREE.AdditiveBlending };
 
-// The air around one costume: shaft, floor pool and dust. `level` is a { value } uniform the
-// costume's light tweens, so its air brightens and dims with it. `floor` is the floor's height.
-export function createAir({ x, floor, level }) {
+// The air around one costume: shaft, floor pool and dust, placed in the costume's station so it
+// travels with it. `level` is a { value } uniform the costume's light sets, so its air brightens
+// and dims with it. `floor` is the floor's height.
+export function createAir({ floor, level }) {
   const air = new THREE.Group();
-  air.position.set(x, floor, 0);
+  air.position.set(0, floor, 0);
   air.add(createShaft(level), createPool(level), createMotes(level));
   return air;
 }

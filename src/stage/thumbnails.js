@@ -31,6 +31,7 @@ export function captureThumbnails({ stage, rigs, director }) {
 
   const urls = rigs.map((rig, i) => {
     rigs.forEach((r, j) => { r.turntable.visible = r.air.visible = j === i; });
+    rig.station.position.set(0, 0, 0); // in front, where the director frames a costume
     rig.turntable.rotation.y = ANGLE;
     setLight(rig, 1);
     director.cut(director.frameCostume(rig, region));
@@ -49,5 +50,5 @@ export function captureThumbnails({ stage, rigs, director }) {
     rig.turntable.rotation.y = saved[i].rotation;
   });
   distance.visible = true;
-  return urls; // the attract state sets lights and camera for the first real frame
+  return urls; // the attract state sets the revolve, lights and camera for the first real frame
 }

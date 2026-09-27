@@ -191,6 +191,7 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
     const timeline = gsap.timeline();
     timeline.set(figure, { autoAlpha: 0 }, 0);
     timeline.add(director.pushIn(rig, hotspot), 0);
+    timeline.add(director.upstage(true), 0); // the costumes upstage go dark while the visitor reads
     timeline.fromTo(panel,
       { ...offscreen(), autoAlpha: 0 },
       { xPercent: 0, yPercent: 0, autoAlpha: 1, ...MOTION.panelIn },
@@ -266,6 +267,7 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
     const timeline = gsap.timeline();
     timeline.add(closeTimeline(), 0);
     timeline.add(director.pullBack(rig), 0.2);
+    timeline.add(director.upstage(false), 0.2);
     return director.play(timeline, 'explore');
   }
 
