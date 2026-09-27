@@ -148,16 +148,20 @@ export function createStory({ overlay, content, director, turntables, hotspots, 
       width: frame.offsetWidth,
       height: frame.offsetHeight,
     });
+    // Nothing shows until the growth starts (immediateRender: false): the start is read then, from
+    // where the ring is once the camera has landed, and the copy fades in as it leaves the ring.
     return gsap.timeline()
       .fromTo(flyer, {
         left: () => ring().x - RING_RADIUS, top: () => ring().y - RING_RADIUS,
-        width: RING_RADIUS * 2, height: RING_RADIUS * 2, borderRadius: RING_RADIUS, rotation: 0, autoAlpha: 1,
+        width: RING_RADIUS * 2, height: RING_RADIUS * 2, borderRadius: RING_RADIUS, rotation: 0,
       }, {
         left: () => target().left, top: () => target().top,
         width: () => target().width, height: () => target().height,
         borderRadius: sketch ? 1 : 0, rotation: tilt,
         ...MOTION.grow,
+        immediateRender: false,
       })
+      .fromTo(flyer, { autoAlpha: 0 }, { autoAlpha: 1, ...MOTION.growFade, immediateRender: false }, 0)
       .set(figure, { autoAlpha: 1 })
       .call(() => startLean(hotspot))
       .to(flyer, { autoAlpha: 0, duration: 0.2 });

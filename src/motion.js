@@ -18,7 +18,8 @@ export const MOTION = {
   panelOut: { duration: 0.45, ease: 'power2.in' },
   swapOut:  { duration: 0.25, ease: 'power1.in' },   // another hotspot in an open story: the words leave…
   swapIn:   { duration: 0.35, ease: 'power1.out' },  // …and return for the new detail as the camera lands
-  grow:     { duration: 0.75, ease: 'power3.inOut' }, // the close-up growing out of the ring
+  grow:     { duration: 0.8, ease: 'power2.inOut' },  // the close-up growing out of the ring, in one move…
+  growFade: { duration: 0.2, ease: 'power1.out' },    // …fading in as it leaves the ring
   draw:     { duration: 0.55, ease: 'power2.out' },   // the line from the ring to the panel
   retract:  { duration: 0.25, ease: 'power1.in' },
   bloom:    { duration: 1.1, ease: 'power2.out' },    // a back hotspot's first reveal
