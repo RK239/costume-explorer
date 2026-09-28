@@ -17,7 +17,7 @@ One dark stage with three costumes on a revolving stage, each on its own turntab
   - never toggle a light's `visible`. Three.js recompiles every material when the number of lights changes, which stalls the iPad. Only change intensity.
 - Background: a near-black stage colour.
 - Air without lights (`atmosphere.js`): each costume stands in a shaft of light through haze (a cone mesh, only its far half drawn, brightness from the view angle), with a pool on the floor and dust drifting in it; all of it follows the costume's light level. Faint shafts 7–30 m back give depth through parallax. Unlit and additive, so nothing recompiles.
-- Tone mapping: Neutral by default (`?tone=agx` to compare); Rakesh confirms by eye. Output is sRGB.
+- Tone mapping: Neutral by default (`?tone=agx` to compare); Output is sRGB.
 - Camera: a PerspectiveCamera with a vertical FOV around 30° (roughly a 45 mm full-frame vertical equivalent). Rakesh has the final say on the lens.
 
 ## Interaction model: turntable, not orbit
