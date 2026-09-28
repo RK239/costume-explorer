@@ -21,6 +21,7 @@ const WIDE_MARGIN = 1.35;  // the attract wide shot: the group with air around i
 const HERO_MARGIN = 1.1;   // an attract hero shot: the group, a little closer
 const ATTRACT_EYE = 0.8;   // m: the attract loop's camera height, about the costumes' middle, so the three line up around one axis
 const HIT_MARGIN = 24;     // px around a costume that still counts as touching it
+const LABEL_GAP = 12;      // px between a costume's title card and the costume, exploring
 
 export function createDirector(stage, rigs, revolve) {
   const { camera, renderer } = stage;
@@ -40,6 +41,8 @@ export function createDirector(stage, rigs, revolve) {
   // title block ends and the invitation begins.
   let headlineRect = () => ({ left: 0, top: 0, width: 0, height: 0 });
   let headlineBands = () => ({ top: 0, bottom: viewport().height });
+  // How far down a costume's title card reaches while exploring, supplied by label.js.
+  let labelBottom = () => 0;
 
   const viewport = () => ({ width: canvas.clientWidth, height: canvas.clientHeight });
   // Same test as the CSS (@media (orientation: portrait)), so layout and camera never disagree.
@@ -74,7 +77,17 @@ export function createDirector(stage, rigs, revolve) {
   // Landscape: the headline is a column at the inline end, the costumes beside it, like a poster.
   // Portrait: the title sits at the top and the invitation at the bottom, both centred, and the
   // costumes stand between them.
+  // The attract loop frames from it on every frame (attract.js), so it's measured once per layout:
+  // screen size, direction and language (and again once the web fonts have loaded).
+  let attractCache = null;
+  document.fonts?.addEventListener?.('loadingdone', () => { attractCache = null; });
   function attractRegion() {
+    const { width, height } = viewport();
+    const key = `${width}x${height}|${document.documentElement.dir}|${state.lang}`;
+    if (attractCache?.key !== key) attractCache = { key, region: measureAttractRegion() };
+    return attractCache.region;
+  }
+  function measureAttractRegion() {
     const { width, height } = viewport();
     const text = headlineRect();
     const css = getComputedStyle(document.documentElement);
@@ -123,7 +136,28 @@ export function createDirector(stage, rigs, revolve) {
     return { x: 0, bottom: rig.bottom, top: rig.top, radius: rig.radius }; // in front, where the revolve brings it
   }
 
-  const frameCostume = (rig, region = freeRegion()) => fit(subjectOf(rig), region);
+  // Exploring, the costume stands below its title card: the free region, starting under the card
+  // when the card reaches below the band kept for it (a long title that wraps, or Arabic, which
+  // runs larger).
+  function exploreRegion(rig) {
+    const region = freeRegion();
+    const top = Math.max(region.top, labelBottom(rig.index) + LABEL_GAP);
+    return { ...region, top, height: region.height - (top - region.top) };
+  }
+
+  // A costume's plinth reaches nearer the camera than its axis, so its front edge sits lower on
+  // screen than the plinth's underside at the axis: counted as it appears at the axis's depth
+  // (it depends on the camera distance, so refined a few times), so it stays clear of the
+  // selector under the stage.
+  function frameCostume(rig, region = exploreRegion(rig)) {
+    const subject = subjectOf(rig);
+    let target = fit(subject, region);
+    for (let k = 0; k < 3; k++) {
+      subject.bottom = EYE_HEIGHT + (rig.bottom - EYE_HEIGHT) * (target.z / (target.z - rig.radius));
+      target = fit(subject, region);
+    }
+    return target;
+  }
 
   // Attract shots frame the group: one costume in front (the hero) with the other two upstage
   // behind it, the stage closed up, fitted into the space beside the headline, so a passer-by
@@ -202,8 +236,9 @@ export function createDirector(stage, rigs, revolve) {
 
   // Switching language re-lays the page out: in Arabic the story panel and the attract headline
   // move to the left, so the costume moves right. The words fade out, the page flips while they're
-  // hidden (`apply`), the camera glides to the mirrored framing, and the words come back. In the
-  // attract state the loop re-frames its own shot, so only the words fade.
+  // hidden (`apply`), the camera glides to the mirrored framing, and the words come back once it
+  // has landed, so the costume never slides behind them. In the attract state the loop eases its
+  // own framing across (attract.js) for the same time.
   function toLanguage(apply, words) {
     const mode = state.mode;
     const { out, back } = MOTION.language;
@@ -219,7 +254,7 @@ export function createDirector(stage, rigs, revolve) {
         ...MOTION.reframe,
       });
     }
-    timeline.to(words, { opacity: 1, ...back }, mode === 'attract' ? '+=0.1' : '<0.3');
+    timeline.to(words, { opacity: 1, ...back }, mode === 'attract' ? `+=${MOTION.reframe.duration - 0.1}` : '>-0.1');
     return mode === 'attract' ? timeline : play(timeline, mode);
   }
 
@@ -425,7 +460,9 @@ export function createDirector(stage, rigs, revolve) {
   }
 
   // Orientation changes re-frame straight away; mid-transition, once the move lands.
+  // (The attract loop re-frames itself: attract.js.)
   stage.onResize(() => {
+    if (state.mode === 'attract') return;
     if (locked) reframePending = true;
     else cut(shotForMode());
   });
@@ -437,6 +474,7 @@ export function createDirector(stage, rigs, revolve) {
     set turntables(t) { turntables = t; },
     set headlineRect(fn) { headlineRect = fn; },
     set headlineBands(fn) { headlineBands = fn; },
+    set labelBottom(fn) { labelBottom = fn; },
     attractGlow: ATTRACT_GLOW,
     lightStage,
     upstage,

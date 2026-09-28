@@ -26,7 +26,7 @@ One dark stage with three costumes on a revolving stage, each on its own turntab
 - Only the first pointer counts; extra touches are ignored. Use `setPointerCapture`.
 - On release, the turntable keeps turning with inertia and damping; clamp the maximum angular velocity.
 - Auto-rotate: a slow constant turn when idle. It resumes about 3 s after the last touch, easing up to speed rather than jumping. Changes of pace glide.
-- Attract: one continuous take. Every shot frames the whole group (`director.frameGroup`: the hero in front, the pair upstage, the stage closed up to fit beside the headline). Per costume: hand-over (revolve turns, camera eases back, all lit), arrival (camera closes in, hero lit, upstage at 0.2), hero (it turns to show its back, pauses, comes round to its front, while the camera leans in). The revolve always turns one way, the next costume coming from the side away from the headline, and each loop starts with the revolve at its home (the middle costume in front). A costume in the centre always faces the visitor: it turns to its front as the stage brings it round. The wide shot holds with all three still, facing front; all three start turning as the camera moves in (the two upstage at 0.15 rad/s). Every hero turns at one pace and hands back to the slow turn without a jolt. Every reset turns all three turntables to `rig.home` (front): at the start of each loop, and on Home and the idle return as the camera pulls back.
+- Attract: one continuous take. Every shot frames the whole group (`director.frameGroup`: the hero in front, the pair upstage, the stage closed up to fit beside the headline). Per costume: hand-over (revolve turns, camera eases back, all lit), arrival (camera closes in, hero lit, upstage at 0.2), hero (it turns to show its back, pauses, comes round to its front, while the camera leans in). The revolve always turns one way, the next costume coming from the side away from the headline, and each loop starts with the revolve at its home (the middle costume in front). A costume in the centre always faces the visitor: it turns to its front as the stage brings it round. The wide shot holds with all three still, facing front (7.5 s at start-up and in the loop, 2.5 s after Home or the idle return, whose pull-back has just shown it); all three start turning as the camera moves in (the two upstage at 0.15 rad/s). Every hero turns at one pace and hands back to the slow turn without a jolt. Every reset turns all three turntables to `rig.home` (front): at the start of each loop, and on Home and the idle return as the camera pulls back.
 - Fast spin: when |angular velocity| passes a threshold, add `.spinning` to the overlay (labels hide). Remove it once the turntable settles.
 - Tap vs drag: movement under ~8 px and release under ~300 ms counts as a tap. Hotspots are DOM buttons, so taps on them never reach the canvas.
 - No pinch zoom on the model. Close-ups are authored through hotspots, which keeps the costume readable on screen.
@@ -49,7 +49,8 @@ One dark stage with three costumes on a revolving stage, each on its own turntab
   - At the same time, dolly the camera toward the hotspot's height until `frame` × costume height is visible (`frame` comes from content; 0.5–0.8 is typical).
   - Push-ins stop at a medium shot. The story image is the insert.
 - In a story, the first drag pulls the camera back to the whole costume beside the panel (`storyOverview`). Tapping another ring swaps the story in place and pushes in on the new detail; the panel stays open.
-- Re-run the framing on every `resize` and orientation change. Mid-transition, it re-frames once the move lands.
+- Re-run the framing on every `resize` and orientation change. Mid-transition, it re-frames once the move lands. The attract loop frames live instead: each camera move blends two framings worked out from the current layout every frame, so a rotation re-frames the same moment and a language switch eases across.
+- Exploring, the free region starts below the costume's own title card (label.js measures each costume's card once per layout), and the plinth's front edge is counted in the framing.
 
 ## Hotspots
 - DOM buttons in an overlay layer above the canvas; the overlay itself is `pointer-events: none`.
@@ -66,7 +67,7 @@ One dark stage with three costumes on a revolving stage, each on its own turntab
 - The main modes are `attract`, `explore`, `story` and `tour`. While a timeline runs between them, the app sits in `transition`.
 - Every change of mode is a function that returns a GSAP timeline.
 - `director.play(tl)` locks input until the timeline completes. The tour is the exception: a touch pauses it with `tl.pause()`.
-- The 45 s idle timer pauses while the tour plays, and restarts when the tour is paused or ends.
+- The 45 s idle timer pauses while the tour plays, and restarts when the tour is paused or ends. It counts on the wall clock, checked every frame (GSAP's clock stops while Safari isn't drawing), so a kiosk that wakes after 45 s goes back to the lineup at once. Mid-move it asks again a second later, unless a touch comes first.
 - One loop: `gsap.ticker.add(update)`. `update` advances the turntables, projects the hotspots and renders, so tweens and frames stay in lockstep.
 - Accent colour: tween the `--accent` CSS variable on `:root` with GSAP.
 

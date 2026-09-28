@@ -31,10 +31,14 @@ import { MOTION } from '../motion.js';
 // right to left (headline on the left, costume on the right). Home keeps a visitor's language;
 // the idle reset returns to English.
 
-const MOVE = MOTION.glide.duration; // s: a replay settling on the costume in front
+const MOVE = MOTION.glide.duration; // s: every costume turning to face front at the start of a loop from Home or idle
 const APPROACH = 3;        // s: the camera's approach onto the first hero from the still wide shot (the stage is still, so it goes gently)
 const HANDOVER = 3.4;      // s for the stage to bring the next costume to the front
 const WIDE_HOLD = 7.5;     // s the establishing shot holds still, all three facing front: time to take them in before the first hero
+// s it holds after Home or the idle return: the camera has just pulled back to it, so the wide
+// moment has been seen, and a long still hold on top reads as frozen. Never under MOVE (every
+// costume is still turning to face front until then).
+const RETURN_HOLD = 2.5;
 const DRIFT = 0.15;        // rad/s: the attract state's slow turn, about one turn in 40 s (explore turns at 0.25)
 const TURN = 3.6;          // s for each half turn of a hero (front → back, back → front): one pace for all three
 const BACK_HOLD = 1.6;     // s the hero pauses with its back to the visitor
@@ -101,7 +105,6 @@ export function createAttract({ overlay, content, rigs, stage, director, turntab
   // The next costume comes in from the side away from the headline: from the left in English
   // (the headline stands on the right), from the right in Arabic.
   const turnWay = () => (document.documentElement.dir === 'rtl' ? -1 : 1);
-  const shot = director.shot;
   const glow = director.attractGlow;
   let stepIndex = 0;
   let current = null; // the running step's timeline
@@ -112,15 +115,36 @@ export function createAttract({ overlay, content, rigs, stage, director, turntab
   // two costumes changing places swing out furthest. A hand-over is framed for it.
   const halfwayTo = (target) => target - (Math.sign(target - revolve.turn.angle) * revolve.slot) / 2;
 
-  // `again` replays a step with the same costume in front (after a resize or a language switch);
-  // a replay turns the shortest way, since the language may have changed the stage's direction.
-  function playStep(k, { skipMove = false, again = null, replaying = false } = {}) {
+  // ── Camera ──────────────────────────────────────────────────────────
+  // Every camera move in the loop goes from one framing to another, and both ends are worked out
+  // from the screen's current layout on every frame, not once when the move starts. So rotating
+  // the iPad re-frames the same moment (no cut to another shot, no beat played again), and a
+  // language switch glides the framing across to the headline's new side (`blend`) while the
+  // words are hidden, with the loop carrying on.
+  const shot = director.shot;
+  let move = null;                           // the running move: { from, to, ease, p }
+  let framing = () => director.wideShot();   // where the last move built ends
+  const blend = { from: null, t: 1 };        // a language switch: the shot as it was, easing into the live framing
+
+  function cameraMove(timeline, { from, to, duration, ease }, at) {
+    const m = { from, to, ease: typeof ease === 'function' ? ease : gsap.parseEase(ease), p: 0 };
+    timeline.to(m, { p: 1, duration, ease: 'none', onStart: () => { move = m; }, onUpdate: applyCamera }, at);
+    framing = to;
+  }
+
+  function applyCamera() {
+    if (state.mode !== 'attract' || !move) return;
+    let s = mixShot(move.from(), move.to(), move.ease(move.p));
+    if (blend.t < 1) s = mixShot(blend.from, s, blend.t);
+    Object.assign(shot, s);
+  }
+
+  function playStep(k, { skipMove = false, hold = WIDE_HOLD } = {}) {
     stepIndex = k % steps.length;
-    const way = replaying ? 0 : turnWay();
     const timeline = gsap.timeline({ onComplete: () => playStep(stepIndex + 1) });
     current = timeline;
-    if (steps[stepIndex] === 'opening' && again === null) opening(timeline, { skipMove, way });
-    else next(timeline, { again, way, replaying });
+    if (steps[stepIndex] === 'opening') opening(timeline, { skipMove, hold });
+    else next(timeline);
   }
 
   // The opening: every loop starts the same way. After the last hero the stage carries on round
@@ -128,32 +152,32 @@ export function createAttract({ overlay, content, rigs, stage, director, turntab
   // costume turns to face front. The wide shot holds, still, all three facing front, lit alike.
   // Then, as the camera moves in once onto the costume in the centre and its light swells, all
   // three start turning together: the two upstage into their slow turn, the one in the centre to
-  // show its back, like every other hero. (From Home, the idle
-  // return or start-up, `skipMove`: toAttract has framed the wide shot and turned every costume
-  // to face front already; this only catches a costume that moved a hair before the loop began.)
-  function opening(timeline, { skipMove, way }) {
+  // show its back, like every other hero. (From Home, the idle return or start-up, `skipMove`:
+  // toAttract has framed the wide shot and turned every costume to face front already; this only
+  // catches a costume that moved a hair before the loop began. After Home or the idle return the
+  // wide shot holds for `hold`, shorter: the pull-back was the wide moment.)
+  function opening(timeline, { skipMove, hold }) {
     hero = null;
     const index = revolve.middle;
     const rig = rigs[index];
     const settle = skipMove ? 0 : HANDOVER; // the stage at its first position
     let facing = MOVE;                       // when every costume faces front
+    const wide = () => director.wideShot();
     if (!skipMove) {
-      const target = revolve.angleFor(index, { direction: way });
-      if (Math.abs(target - revolve.turn.angle) > 1e-3) {
-        timeline.to(shot, { ...director.frameGroup(index, { margin: FRAME.handover, angle: halfwayTo(target) }), duration: HANDOVER / 2, ease: 'sine.inOut' }, 0);
-        timeline.to(shot, { ...director.wideShot(), duration: HANDOVER / 2, ease: 'sine.inOut' }, HANDOVER / 2);
-        timeline.to(revolve.turn, { angle: target, duration: HANDOVER, ease: 'power2.inOut' }, 0);
-        facing = HANDOVER;
-      } else {
-        timeline.to(shot, { ...director.wideShot(), duration: MOVE, ease: 'power2.inOut' }, 0); // a replay, already in place
-      }
+      const target = revolve.angleFor(index, { direction: turnWay() });
+      const halfway = halfwayTo(target);
+      const widest = () => director.frameGroup(index, { margin: FRAME.handover, angle: halfway });
+      cameraMove(timeline, { from: framing, to: widest, duration: HANDOVER / 2, ease: 'sine.inOut' }, 0);
+      cameraMove(timeline, { from: widest, to: wide, duration: HANDOVER / 2, ease: 'sine.inOut' }, HANDOVER / 2);
+      timeline.to(revolve.turn, { angle: target, duration: HANDOVER, ease: 'power2.inOut' }, 0);
+      facing = HANDOVER;
     }
     director.turnHome(timeline, 0, facing);
     timeline.add(director.lightStage(glow, glow, { duration: 1.6, ease: MOTION.light.ease }), 0);
     timeline.add(director.accentTo(rig.data.accent, 1.8), Math.max(0, settle - 1.8));
     // Arrival: the camera moves in on the group with it in front, and its light swells. All three
     // start turning as it does (until then turnHome holds them still, facing front).
-    const approachAt = settle + WIDE_HOLD;
+    const approachAt = settle + hold;
     const arrive = approachAt + APPROACH;
     timeline.call(() => { hero = index; }, null, approachAt);
     rigs.forEach((r, i) => { if (i !== index) timeline.call(() => turntables.free(i, drift), null, approachAt); });
@@ -161,44 +185,30 @@ export function createAttract({ overlay, content, rigs, stage, director, turntab
     const done = reveal(timeline, rig, approachAt);
     // The camera creeps in from the moment the wide shot settles, very slowly, and the creep
     // gathers into the move in and the lean: one move from the wide shot to the hero.
-    moveIn(timeline, rig, {
-      at: settle, arrivalAt: approachAt, arrival: APPROACH, until: done,
-      fromZ: director.wideShot().z, creepZ: director.wideShot(FRAME.creep).z,
-    });
+    moveIn(timeline, rig, { from: wide, at: settle, arrivalAt: approachAt, arrival: APPROACH, until: done, creep: FRAME.creep });
   }
 
   // The next hero. Hand-over: the stage brings it round while the camera eases back, all three
   // lit, and it turns to face the visitor as it comes. Arrival: the camera closes in on the group
   // with it in front; its light swells and the other two sink back upstage, still in view; then
-  // it turns to show its back. A replay that catches the stage at rest simply settles on the
-  // costume in front; one that catches it mid-turn finishes the turn, the shortest way.
-  function next(timeline, { again, way, replaying }) {
-    const resting = Math.abs(revolve.turn.angle - revolve.angleFor(revolve.frontAt())) < 1e-3;
-    const handover = !replaying || !resting;
-    const index = again ?? revolve.frontAt(revolve.turn.angle + turnWay() * revolve.slot);
+  // it turns to show its back.
+  function next(timeline) {
+    const index = revolve.frontAt(revolve.turn.angle + turnWay() * revolve.slot);
     const rig = rigs[index];
     hero = index;
     turntables.hold(index);
-    const arrive = handover ? HANDOVER : MOVE; // when it stands in front, facing the visitor
-
-    let fromZ = shot.z; // where the camera starts moving in from
-    if (handover) {
-      const target = revolve.angleFor(index, { direction: way });
-      const wide = director.frameGroup(index, { margin: FRAME.handover, angle: halfwayTo(target) });
-      fromZ = wide.z;
-      timeline.to(shot, { ...wide, duration: HANDOVER / 2, ease: 'sine.inOut' }, 0);
-      timeline.to(revolve.turn, { angle: target, duration: HANDOVER, ease: 'power2.inOut' }, 0);
-      timeline.add(director.lightStage(glow, glow, { duration: 1.2, ease: MOTION.light.ease }), 0);
-    } else {
-      timeline.to(revolve.turn, { angle: revolve.angleFor(index), duration: MOVE, ease: 'power2.inOut' }, 0);
-    }
-    faceFront(timeline, rig, arrive);
-    const settleAt = handover ? HANDOVER / 2 : 0;
-    const settled = arrive + (handover ? 0.4 : 0);
-    timeline.add(director.lightStage(1, UPSTAGE, { duration: 1.6, ease: MOTION.light.ease }), Math.max(0.3, arrive - 1.4));
-    timeline.add(director.accentTo(rig.data.accent, 1.8), Math.max(0.3, arrive - 1.8));
-    const done = reveal(timeline, rig, arrive);
-    moveIn(timeline, rig, { at: settleAt, arrival: settled - settleAt, until: done, fromZ });
+    const target = revolve.angleFor(index, { direction: turnWay() });
+    const halfway = halfwayTo(target);
+    const widest = () => director.frameGroup(index, { margin: FRAME.handover, angle: halfway });
+    cameraMove(timeline, { from: framing, to: widest, duration: HANDOVER / 2, ease: 'sine.inOut' }, 0);
+    timeline.to(revolve.turn, { angle: target, duration: HANDOVER, ease: 'power2.inOut' }, 0);
+    timeline.add(director.lightStage(glow, glow, { duration: 1.2, ease: MOTION.light.ease }), 0);
+    faceFront(timeline, rig, HANDOVER);
+    const settled = HANDOVER + 0.4;
+    timeline.add(director.lightStage(1, UPSTAGE, { duration: 1.6, ease: MOTION.light.ease }), HANDOVER - 1.4);
+    timeline.add(director.accentTo(rig.data.accent, 1.8), HANDOVER - 1.8);
+    const done = reveal(timeline, rig, HANDOVER);
+    moveIn(timeline, rig, { from: widest, at: HANDOVER / 2, arrival: settled - HANDOVER / 2, until: done });
   }
 
   // A costume coming to the centre turns to face the visitor as it arrives, the shortest way, in
@@ -226,24 +236,28 @@ export function createAttract({ overlay, content, rigs, stage, director, turntab
 
   // The camera onto a hero, in one move that never stops, from `at` until `until`: most of the
   // way in over its `arrival` (from `arrivalAt`, to the hero shot), with the slow lean-in running
-  // underneath from then on. Before the arrival, an optional slight creep in (to `creepZ`) that
-  // gathers into it. Moves in a row would stop between them (move in, stop, creep in): on a still
-  // stage that reads as a second zoom. Each part is its own eased share of the distance, summed.
+  // underneath from then on. Before the arrival, an optional slight creep in (the wide shot at
+  // the `creep` margin) that gathers into it. Moves in a row would stop between them (move in,
+  // stop, creep in): on a still stage that reads as a second zoom. Each part is its own eased
+  // share of the distance, summed.
   const settleEase = gsap.parseEase('power2.inOut');
   const smoothEase = gsap.parseEase('sine.inOut');
-  function moveIn(timeline, rig, { at, arrivalAt = at, arrival, until, fromZ, creepZ = fromZ }) {
-    const held = director.heroShot(rig);
-    const leaned = director.heroShot(rig, FRAME.heroIn);
+  function moveIn(timeline, rig, { from, at, arrivalAt = at, arrival, until, creep: creepMargin = null }) {
+    const leaned = () => director.heroShot(rig, FRAME.heroIn);
+    const fromZ = from().z;
+    const heldZ = director.heroShot(rig).z;
+    const creepZ = creepMargin ? director.wideShot(creepMargin).z : fromZ;
     const duration = until - at;
-    const total = fromZ - leaned.z || 1;
+    const total = fromZ - leaned().z || 1;
     const a0 = (arrivalAt - at) / duration;             // the arrival starts…
     const a1 = (arrivalAt + arrival - at) / duration;   // …and ends, as shares of the move
     const creep = clamp((fromZ - creepZ) / total, 0, 1);
-    const reach = clamp((fromZ - held.z) / total - creep, 0, 1);
+    const reach = clamp((fromZ - heldZ) / total - creep, 0, 1);
     const lean = 1 - creep - reach;
-    const part = (p, from, to) => clamp((p - from) / (to - from), 0, 1);
-    timeline.to(shot, {
-      ...leaned,
+    const part = (p, lo, hi) => clamp((p - lo) / (hi - lo), 0, 1);
+    cameraMove(timeline, {
+      from,
+      to: leaned,
       duration,
       ease: (p) => creep * smoothEase(part(p, 0, a1))
         + reach * settleEase(part(p, a0, a1))
@@ -251,34 +265,40 @@ export function createAttract({ overlay, content, rigs, stage, director, turntab
     }, at);
   }
 
+  // The first start is the kiosk starting up (the full wide hold); every later one is a return
+  // from a visitor, Home or idle (the short one).
+  let started = false;
   function start() {
     if (current) return;
-    playStep(0, { skipMove: true }); // toAttract / startInAttract already framed the wide shot
+    framing = () => director.wideShot(); // toAttract / startInAttract already framed the wide shot
+    playStep(0, { skipMove: true, hold: started ? RETURN_HOLD : WIDE_HOLD });
+    started = true;
   }
 
   function stop() {
     current?.kill();
     current = null;
     hero = null;
+    move = null;
     rigs.forEach((rig, i) => turntables.free(i));
   }
 
-  // A language switch moves the headline to the other side (and its words change length), and
-  // rotating the iPad changes the whole layout: the current beat plays again, framed for the new
-  // layout, with the same costume in front, and the loop carries on from there.
-  function replay() {
-    if (state.mode !== 'attract' || !current) return;
-    const k = stepIndex;
-    const again = hero;
-    current.kill();
-    rigs.forEach((rig, i) => turntables.free(i, drift)); // everyone back to the slow turn (a hero may be mid-reveal)
-    playStep(k, { again, replaying: true });
-  }
+  // A language switch moves the headline to the other side (and changes its words): the loop
+  // carries on, and the camera eases from where it was into the live framing for the new layout
+  // while the words are hidden (director.toLanguage brings them back once it has landed).
   onLanguage(() => {
     renderWords();
-    replay();
+    if (state.mode !== 'attract' || !move) return;
+    blend.from = { x: shot.x, y: shot.y, z: shot.z, shiftX: shot.shiftX, shiftY: shot.shiftY };
+    blend.t = 0;
+    gsap.to(blend, { t: 1, ...MOTION.reframe, onUpdate: applyCamera, overwrite: true });
   });
-  stage.onResize(replay);
+  // Rotating the iPad: the same moment, framed for the new layout straight away.
+  stage.onResize(() => {
+    if (state.mode !== 'attract') return;
+    if (move) applyCamera();
+    else Object.assign(shot, director.wideShot());
+  });
 
   // ── Touch ───────────────────────────────────────────────────────────
   // A tap enters the costume in the hero shot. In the wide shot, the one nearest the touch,
@@ -349,6 +369,12 @@ export function createAttract({ overlay, content, rigs, stage, director, turntab
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 // Wrap an angle to [−π, π], for the shortest turn.
+// A shot part-way from `a` to `b` (0–1).
+function mixShot(a, b, k) {
+  const mix = (key) => a[key] + (b[key] - a[key]) * k;
+  return { x: mix('x'), y: mix('y'), z: mix('z'), shiftX: mix('shiftX'), shiftY: mix('shiftY') };
+}
+
 function wrapAngle(angle) {
   return Math.atan2(Math.sin(angle), Math.cos(angle));
 }

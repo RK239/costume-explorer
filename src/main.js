@@ -57,7 +57,7 @@ const hotspots = createHotspots({
 });
 story = createStory({ overlay, content, director, turntables, hotspots });
 const selector = createSelector({ overlay, content, rigs, director, story, thumbnails });
-const label = createLabel({ overlay, rigs });
+const label = createLabel({ overlay, rigs, director });
 
 // Exploring, a tap on one of the costumes upstage brings it to the front: the stage itself is
 // the way to the others, as well as the buttons.
@@ -110,10 +110,7 @@ const idle = createIdle({
   seconds: flags.idleSeconds,
   onIdle: function returnToAttract() {
     if (state.mode === 'attract') return;
-    if (director.locked) {
-      gsap.delayedCall(1, returnToAttract); // mid-move: try again once it lands
-      return;
-    }
+    if (director.locked) return false; // mid-move: idle.js tries again a second later, unless a touch comes first
     const closing = state.story ? story.closeTimeline() : undefined;
     hotspots.resetSeen();
     setLanguage('en');

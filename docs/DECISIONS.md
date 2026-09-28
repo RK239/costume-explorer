@@ -91,7 +91,7 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
 - **Decision:** the selector shows while exploring and in a story, and hides in the attract state, which invites touching the costumes themselves. Tapping the current costume from a story closes the story.
 - **Decision:** switching from inside a story is one timeline: the panel slides out while the camera travels. Never two moves in a row.
 - **Decision:** in portrait, the story sheet sits above the selector's band, so the selector is always reachable. The camera's story region is taken from where the panel actually sits (`offsetLeft/Top`), not from its size alone.
-- **Decision:** idle reset is one timeline: close the story, clear found state, reset the language, back to the lineup with every costume lit. If a move is already running when the timer fires, it retries a second later.
+- **Decision:** idle reset is one timeline: close the story, clear found state, reset the language, back to the lineup with every costume lit. If a move is already running when the timer fires, it retries a second later (a touch cancels the retry; see "The idle return").
 - **Fix:** `director.play()` now keeps a timeline's own `onComplete`. Setting its own callback had silently replaced the one that hides the other costumes after a switch; a scripted run caught it.
 
 ## Attract state (step 8)
@@ -397,6 +397,22 @@ Built in step 11 (2026-09-26):
   - The swipe is direct manipulation (the finger sets the revolve's angle, like the turntable drag); the landing is a GSAP timeline, and input is locked from the first movement to the landing.
 - **Rejected:** the row with the camera travelling along it (the neighbours sit just outside the frame, so nothing says there's more); a glimpse of the neighbours at the frame edges with name tags (Rakesh: odd composition; see Rejected AI suggestions); upstage costumes dimly lit in a story (they compete with the text).
 - **Cost:** all three costumes are drawn while exploring, instead of one. To measure on the iPad (`?dev=1`); the armour's normal-map bake helps.
+
+## Rotation and language switches (2026-09-28)
+- **Why:** Rakesh: portrait looked right, but rotating to landscape and switching language looked odd. Measured in the browser: a language switch in the attract loop left the costumes behind the headline's words for 1–3.5 s and replayed the current costume's turn from its front; rotating mid-loop cut to the wide shot and glided back in, and the costume turned backwards to start its turn again; in a story the panel came back while the costume was still sliding past it; exploring on a 12.9" iPad, the armour's two-line title card covered its helmet (and Arabic cards ran 3–16 px into the costume's space).
+- **Decision:** the attract loop's camera frames live. Every move goes from one framing to another, and both ends are worked out from the screen's current layout every frame. Rotating re-frames the same moment: no cut to another shot, no beat played again.
+- **Decision:** a language switch hides the words, flips the page, moves the camera to the new layout, and brings the words back only once it has landed, in every mode. In the loop, the camera eases from where it was into the live framing and the loop carries on.
+- **Decision:** exploring, each costume is framed below its own title card, measured for every costume once per layout with a hidden copy of the card (a long title wraps; Arabic runs larger), and with the front edge of its plinth counted, so it stays clear of the buttons below.
+- **Rejected:** replaying the current beat for the new layout (it restarted the costume's turn and cut the camera first); a larger fixed band for the title card (it would shrink every costume to suit the longest title).
+
+## The idle return (2026-09-28)
+- **Why:** Rakesh: sometimes the attract loop didn't seem to start after the idle time. Measured in the browser, the return itself worked every time (from explore, from a story in Arabic, after a swipe), but:
+  - after the 2.4 s pull-back, the wide shot held for another 7.6 s with nothing turning, so for about 10 s the screen read as frozen;
+  - the timer ran on GSAP's clock, which stops whenever Safari stops drawing (screen asleep, another app in front). With the timer at 5 s and frames stopped for 8 s, the return came at 13 s;
+  - mid-move, the timer retried every second, and a new touch didn't cancel the retry: a visitor who touched again was sent back to the lineup 0.8 s later.
+- **Decision:** after Home or the idle return, the wide shot holds for 2.5 s instead of 7.5 s: the pull-back has just shown the wide moment. At start-up and within the loop, it still holds 7.5 s.
+- **Decision:** the idle timer counts on the wall clock, checked every frame, so a kiosk that wakes after 45 s goes back to the lineup on its first frame. Mid-move it still asks again a second later, but a touch cancels that.
+- **Rejected:** no hold after a return (the loop would start moving in the moment the pull-back lands: two moves with no breath between them); a timer on `setTimeout` (Safari throttles it in the background too, and it would sit outside the one loop).
 
 ## Out of scope
 - **Camera try-on.** It's not in the brief's creative-extra list, it takes time the core build needs, and it raises camera-privacy questions in a public space. Pitch it in the defence as a next step (headpiece try-on via face tracking).
