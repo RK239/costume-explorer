@@ -64,7 +64,7 @@ One dark stage with three costumes on a revolving stage, each on its own turntab
 - Labels are choreographed: on arrival the rings come in one after another and the labels follow. A label draws out only while its detail faces the camera (with hysteresis) and draws back as it turns away.
 
 ## State machine and timelines
-- The main modes are `attract`, `explore`, `story` and `tour`. While a timeline runs between them, the app sits in `transition`.
+- The main modes are `attract`, `explore`, `story` and `tour`. While a timeline runs between them, the app sits in `transition`. (The tour was cut for time; what follows about it was the plan.)
 - Every change of mode is a function that returns a GSAP timeline.
 - `director.play(tl)` locks input until the timeline completes. The tour is the exception: a touch pauses it with `tl.pause()`.
 - The 45 s idle timer pauses while the tour plays, and restarts when the tour is paused or ends. It counts on the wall clock, checked every frame (GSAP's clock stops while Safari isn't drawing), so a kiosk that wakes after 45 s goes back to the lineup at once. Mid-move it asks again a second later, unless a touch comes first.
@@ -140,7 +140,7 @@ src/
     home.js          the Home button (under the language button): back to the lineup and the attract loop
     attract.js       attract timeline and headline
     idle.js          45 s timer
-    tour.js          guided tour timeline
+    tour.js          guided tour timeline (planned, cut for time; DECISIONS: Creative extra)
     i18n.js          t(), num(), setLanguage (lang, dir="rtl", re-renders), the language button
     touch-lock.js    blocks Safari's pinch, scroll, long-press and selection
   styles/

@@ -311,6 +311,8 @@ Each entry records the decision, why, and what was rejected. Add to it as the bu
 - **Decision:** guided hotspot tour, ordered front → side → back so it ends on the hidden detail.
   - **Why:** it reuses the push-in and story timelines, and it works like a shot list. It also serves the visitor who won't explore alone.
   - **Never cut:** it's the only creative extra, so if time runs short it shrinks to the current costume's hotspots rather than going.
+- **Changed (Rakesh, 2026-09-28): the tour was cut for time and never built.** The creative extra is the brief's "subtle idle motion/light", which the stage already does: each costume stands in a shaft of light through haze with dust drifting in it, faint shafts far back give depth, the light follows each costume as the revolving stage turns (the arriving one comes up, the leaving one sinks upstage), and in the attract loop the hero's light swells as the camera closes in.
+  - **Rejected:** claiming the tour; building it after the build was frozen (2–3 hours with the revolving stage and the story swap to fit around).
   - **Alternative still open:** a raking-light idle, the brief's "subtle idle motion/light" option. Textile conservators use low-angle light to reveal weave and embroidery. Switch to it if the models have strong normal detail.
   - **Rejected:**
     - Sound: questionable in a shared exhibition space, and iOS needs a tap before audio can play.

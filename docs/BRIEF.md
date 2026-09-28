@@ -34,7 +34,7 @@ Build a touch-first exhibition web page where visitors explore three very differ
 
 ## Creative extra (pick one)
 Sound matched to materials; subtle idle motion/light; a before/after or sketch-to-finished comparison; or a guided hotspot tour.
-- [ ] Chosen: guided hotspot tour (see DECISIONS.md)
+- [x] Chosen: subtle idle motion/light (the guided hotspot tour was planned and cut for time; see DECISIONS.md)
 
 ## Your call (explain in README)
 - [ ] Hotspot style

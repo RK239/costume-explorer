@@ -216,6 +216,7 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 
 ## 12. Guided tour (~30 min)
 *Deferred (2026-09-26, Rakesh): built once the stories are final, since the tour's pacing depends on the copy.*
+*Cut for time (2026-09-28, Rakesh): the creative extra is "subtle idle motion/light" instead (DECISIONS: Creative extra).*
 - [ ] One timeline that runs the hotspots in `tourOrder` (front → side → back): push-in, chapters, hold, next.
 - [ ] A visible progress ring. A touch pauses the tour; a tap on the ring resumes it.
 - [ ] The idle timer stays paused while the tour plays.
