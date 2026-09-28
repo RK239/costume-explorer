@@ -24,11 +24,11 @@
     "simplifyRatio": 0.23,
     "simplifyError": 0.005,
     "textureSize": {
-      "baseColorTexture": 4096
+      "baseColorTexture": 2048
     },
     "_place": "The scan arrives in arbitrary units, facing -Z and floating off-centre. Height and lift are estimates for an adult wearer of about 1.70 m: collar near 1.47 m, the breeches' knee bands and the cape hem near 0.40 m. Adjust by eye.",
-    "_textureSize": "A scan has one colour texture and no normal or roughness maps, so it can afford 4K and still sit inside the GPU budget.",
-    "changes": "A hole in the cape's white lining patched with a new piece of lining in Blender (scripts/blender/patch-national-lining.py): a thin surface fitted over the hole, its stripes continued from the lining around it in a small texture of its own. Turned 180\u00b0 to face the front, scaled to an estimated real height and centred on the turntable. Stray atlas UVs clamped to 0\u20131. Simplified from 500k to ~117k triangles (meshoptimizer). The 4K colour texture converted to WebP. Geometry compressed with meshopt. This optimised model is shared under CC BY-SA 4.0, as the original licence requires.",
+    "_textureSize": "A scan has one colour texture and no normal or roughness maps, so it could afford 4K inside the GPU budget. Back to 2K (Rakesh, 2026-09-28) for load time: a first visit took about 5 s on the iPad.",
+    "changes": "A hole in the cape's white lining patched with a new piece of lining in Blender (scripts/blender/patch-national-lining.py): a thin surface fitted over the hole, its stripes continued from the lining around it in a small texture of its own. Turned 180\u00b0 to face the front, scaled to an estimated real height and centred on the turntable. Stray atlas UVs clamped to 0\u20131. Simplified from 500k to ~117k triangles (meshoptimizer). The 4K colour texture resized to 2K and converted to WebP. Geometry compressed with meshopt. This optimised model is shared under CC BY-SA 4.0, as the original licence requires.",
     "clampUVs": true,
     "_clampUVs": "47 of 134,629 atlas UVs strayed up to 0.4% outside 0\u20131, which kept all UVs as 32-bit floats.",
     "_source": "models-src/National Costume.glb is the patched scan, written by the Blender script from the original in models-src/originals/.",
@@ -41,11 +41,11 @@
     "simplifyRatio": 0.45,
     "simplifyError": 0.001,
     "textureSize": {
-      "baseColorTexture": 4096
+      "baseColorTexture": 2048
     },
     "_place": "A full suit, helmet to sabatons, already in metres (1.67 m) with its feet at the bottom. Its front faces +X, so it is turned -90\u00b0. No lift: it stands on the plinth.",
-    "_texture": "The 4K download (a 4096 PNG), converted to WebP. In a push-in the etched scrollwork and the figures in the breastplate's medallions are crisp at 4K and soft at 1K. It costs ~2 MB of file and fits the GPU budget (~89 MB).",
-    "changes": "Turned -90\u00b0 to face the front and centred on the turntable. Simplified from 1M to ~450k triangles (meshoptimizer). Colour texture converted to WebP. Geometry compressed with meshopt.",
+    "_texture": "The 4K download (a 4096 PNG), resized to 2K and converted to WebP. Back to 2K (Rakesh, 2026-09-28) for load time: a first visit took about 5 s on the iPad, and 4K cost ~1.5 MB of file and four times the pixels to decode and upload. In a push-in the etching is a little softer than at 4K (and much crisper than at 1K).",
+    "changes": "Turned -90\u00b0 to face the front and centred on the turntable. Simplified from 1M to ~450k triangles (meshoptimizer). The 4K colour texture resized to 2K and converted to WebP. Geometry compressed with meshopt.",
     "_simplify": "Steel scans carry their relief (repouss\u00e9 lions, scrollwork, rivets) in the geometry, not the texture. At 150k triangles the relief collapsed into faceted 'foil'; 300k still lost it; 450k keeps most of it. The geometry is ~4.3 MB of the 6.55 MB file (1K texture: 4.53 MB, 2K: 5.02 MB, 4K: 6.55 MB), so only a normal map baked from the 1M original onto a ~150k mesh brings it near the 3 MB budget."
   },
   "Calligraphy Dress.glb": {
@@ -62,9 +62,9 @@
     "simplifyRatio": 0.25,
     "simplifyError": 0.005,
     "textureSize": {
-      "baseColorTexture": 4096
+      "baseColorTexture": 2048
     },
     "_place": "An Artec Leo scan in millimetres, already facing front. Height 1.42 m is its true size, shoulder to hem; the hem sits 5 cm above the plinth, as on an invisible dress form. The scan leaned about 6\u00b0 back and 2.5\u00b0 sideways (the chest 12 cm behind and 5 cm beside the hem's centre), so tilt stands it upright; after it, every cross-section from hem to chest is centred within 1 cm. The forearms are bent forward from the scan, so the axis is centred on the skirt (centreOn 0.25), not the whole bounds; that also keeps the hotspots in place if the sleeves are re-posed.",
-    "changes": "Stood upright (tilted 5.5\u00b0 forward and 2.4\u00b0 sideways), scaled from millimetres to metres and centred on the turntable under the skirt. Simplified from 463k to ~116k triangles (meshoptimizer). The 4K colour texture converted to WebP. Geometry compressed with meshopt."
+    "changes": "Stood upright (tilted 5.5\u00b0 forward and 2.4\u00b0 sideways), scaled from millimetres to metres and centred on the turntable under the skirt. Simplified from 463k to ~116k triangles (meshoptimizer). The 4K colour texture resized to 2K and converted to WebP (Rakesh, 2026-09-28, for load time). Geometry compressed with meshopt."
   }
 }

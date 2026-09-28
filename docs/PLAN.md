@@ -196,9 +196,10 @@ https://sketchfab.com/search?features=downloadable&licenses=322a749bcfa841b29dff
 - [x] Switching is a light cross-fade: the costume the camera leaves fades out, the next comes up out of the dark as the camera lands; nothing pops in or out (fixed "going dark" never dimming the room fill).
 - [x] Less light behind the costumes: the haze sits above them, narrower and fainter, so the space right behind each garment stays dark.
 - [x] Parade Armour at 4K (sharper etching in push-ins). 6.55 MB, over the 3 MB file budget until the normal bake.
+- [x] All three colour textures back to 2K (Rakesh, 2026-09-28): a first visit took about 5 s on the iPad. Armour 5.02 MB (still over the 3 MB file budget until the normal bake), National Costume 1.79 MB, Calligraphy Dress 1.19 MB.
 - [x] National Costume: the hole in the cape's lining patched in Blender with a new piece of lining (`scripts/blender/patch-national-lining.py`); still under 3 MB (2.98).
 - [x] Reading while turning: the costume turns during a story (the first drag pulls back to the whole costume), the other rings and labels show, and a tap on one swaps the story in place without closing the panel.
-- [ ] Rakesh: bake a normal map for the armour (1M original → ~150k mesh) to bring its file down from 6.55 MB (DECISIONS: Models and licences).
+- [ ] Rakesh: bake a normal map for the armour (1M original → ~150k mesh) to bring its file down from 5.02 MB (DECISIONS: Models and licences).
 - [ ] Rakesh: re-pose the dress's forearms in Blender (see DECISIONS: Third costume). Then `npm run models`, and Claude places the cuff hotspot again.
 - [ ] Rakesh: check all of it on the iPad (look, and fps against the ~54 before; three real models now load).
 - [ ] More changes from Rakesh.
